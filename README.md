@@ -1,16 +1,23 @@
 # StoneCutter Language Specification
 
 ## Introduction
-This document serves as the specification behind the CoreGen 
-Intermediate Representation (IR).  The CoreGen IR is formatted 
-as human-readable YAML (YAML Ain't a Markup Language) text such that 
-tools outside the CoreGen/System Architect ecosystem have the ability 
-to read and interpret the IR.  Further, it is entirely possible to 
-manually construct an IR file using a simple text editor.  Pay special 
-attention to the version structure of the IR Spec.  Future versions 
-of the System Architect/CoreGen tools may utilize newer versions of the 
-spec.  While we make every effort to remain backward compatible, there 
-may be certain idiosyncratic discrepancies.  
+This document serves as the specification behind the 
+StoneCutter high level design language.  StoneCutter is designed 
+to be a very compact and concise language that permits users to 
+define the implementation for a SINGLE instruction.  This alleviates 
+the user from manually specifiying redundant items such as I/O 
+interfaces, register interfaces and hardware timing.  StoneCutter 
+is designed to interface directly with the remainder of the System 
+Architect and CoreGen infrastructure.  The output of compiling 
+one or more StoneCutter instruction definitions is an equivalent 
+Chisel representation of the circuit that is directly integrated 
+with the remainder of the System Architect design flow.  This can 
+be further compiled down to a Verilog representation of the target 
+design.  
+
+This document serves a full language specification.  It does 
+not outline any of the associated tools and interfaces utilized 
+within the System Architect design flow.  
 
 ## Getting Started
 Building the specification document requires LaTeX.  The easiest way to build 
