@@ -96,7 +96,7 @@
 %-- begin TCL logo
 \begin{figure}
 \begin{center}
-\includegraphics[width=3in]{figures/stonecutter.png} % Include the logo
+\includegraphics[width=5in]{figures/stonecutter.png} % Include the logo
 \end{center}
 \end{figure}
 %-- end TCL logo
@@ -225,8 +225,115 @@ order.
 %	SECTION 2
 %----------------------------------------------------------------------------------------
 \clearpage
-\section{CoreGen IR Nodes}
-\label{sec:CoreGenIRNodes}
+\section{StoneCutter Language}
+\label{sec:StoneCutterLanguage}
+
+
+\subsection{Overview}
+\label{sec:LangOverview}
+
+\subsection{Register Class Definitions}
+\label{sec:RegClassDef}
+
+\subsection{Instruction Prototypes}
+\label{sec:InstructionPrototypes}
+
+\subsection{Variable Definitions}
+\label{sec:Variable Definitions}
+
+\subsection{Arithmetic Operations}
+\label{sec:Arithmetic Operations}
+
+\subsection{Conditional Operations}
+\label{sec:ConditionalOperations}
+
+\subsection{Loop Operations}
+\label{sec:LoopOperations}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 3
+%----------------------------------------------------------------------------------------
+\clearpage
+\section{Intrinsic Functions}
+\label{sec:IntrinsicFunctions}
+
+\subsection{Overview}
+\label{sec:IntrinsicOverview}
+
+\subsection{Arithmetic Intrinsics}
+\label{sec:ArithIntrinsics}
+
+\subsubsection{CLZ}
+\label{sec:CLZ}
+
+\subsubsection{COMPRESS}
+\label{sec:COMPRESS}
+
+\subsubsection{COMPRESSM}
+\label{sec:COMPRESSM}
+
+\subsubsection{CTZ}
+\label{sec:CTZ}
+
+\subsubsection{DOZ}
+\label{sec:DOZ}
+
+\subsubsection{EXTRACTS}
+\label{sec:EXTRACTS}
+
+\subsubsection{EXTRACTZ}
+\label{sec:EXTRACTZ}
+
+\subsubsection{INSERTS}
+\label{sec:INSERTS}
+
+\subsubsection{INSERTZ}
+\label{sec:INSERTZ}
+
+\subsubsection{MAJ}
+\label{sec:MAJ}
+
+\subsubsection{MAX}
+\label{sec:MAX}
+
+\subsubsection{MERGE}
+\label{sec:MERGE}
+
+\subsubsection{MIN}
+\label{sec:MIN}
+
+\subsubsection{NOT}
+\label{sec:NOT}
+
+\subsubsection{POPCOUNT}
+\label{sec:POPCOUNT}
+
+\subsubsection{REVERSE}
+\label{sec:REVERSE}
+
+\subsubsection{ROTL}
+\label{sec:ROTL}
+
+\subsubsection{ROTR}
+\label{sec:ROTR}
+
+\subsubsection{SEXT}
+\label{sec:SEXT}
+
+\subsubsection{ZEXT}
+\label{sec:ZEXT}
+
+\clearpage
+\subsection{Memory Intrinsics}
+\label{sec:MemIntrinsics}
+
+\subsubsection{LOAD}
+\label{sec:LOAD}
+
+\subsubsection{STORE}
+\label{sec:STORE}
+
+
 
 
 %----------------------------------------------------------------------------------------
@@ -237,7 +344,14 @@ order.
 \label{sec:AppendixA}
 
 \vspace{0.125in}
-\lstinputlisting[frame=single,style=base,caption={Sample IR File},captionpos=b,label={lis:sampleirfile}]{SAMPLE.yaml}
+\lstinputlisting[frame=single,style=base,caption={Sample StoneCutter},captionpos=b,label={lis:samplescfile}]{SAMPLE.sc}
+
+%----------------------------------------------------------------------------------------
+%	SECTION: Appendix B: Intrinsic Operation Table
+%----------------------------------------------------------------------------------------
+\clearpage
+\section{Appendix B: Intrinsic Function Table}
+\label{sec:AppendixB}
 
 %----------------------------------------------------------------------------------------
 %	BIBLIOGRAPHY
