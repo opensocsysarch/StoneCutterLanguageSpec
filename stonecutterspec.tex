@@ -145,7 +145,6 @@ Authors: & Tactical Computing Labs\\ % Author names
 \begin{versionhistory}
   \vhEntry{0.1}{01.22.2018}{JLeidel}{Initial public release}
 \end{versionhistory}
-
 \clearpage
 
 %----------------------------------------------------------------------------------------
@@ -154,71 +153,49 @@ Authors: & Tactical Computing Labs\\ % Author names
 \clearpage
 \section{Overview}
 
-this is a citation~\cite{IRSpec}.
-
-
-The CoreGen Intermediate Representation (IR) specification is utilized as the core 
-mechanism by which to translate a hardware design to various levels of hardware 
-design language and simulation infrastructure.  The CoreGen IR has the following goals:
+The StoneCutter language is utilized to develop the implementation of a 
+single instruction within the System Architect design workflow.  The StoneCutter 
+language abstracts a large portion of traditional high level design languages such 
+that the user may focus on the implementation details of a single instruction rather 
+than the connectivity to the remainder of the infrastructure.  The core features of 
+the StoneCutter language infrastructure are noted as follows: 
 
 \begin{itemize}
-\item \textbf{Support Rapid Design Workflows}: Traditional design techniques and tools require long 
-design and prototyping cycles, often with expensive external tools.  The CoreGen IR is design to provide 
-rapid design and prototyping workflows such that hardware and software artifacts can be generated in minutes 
-rather than days.
+\item \textbf{Compiled Language}: Unlike other HDL approaches, the StoneCutter language 
+is, in fact, compiled.  The core StoneCutter compiler infrastructure makes use of the LLVM 
+compiler infrastructure for lexing, parsing, optimization and code generation.  As a result, we have 
+the ability to initiate traditional optimizing compiler passes, syntax tests and lexical analysis as 
+other compiled languages.  Further, we have the ability to craft tooling that integrates with the StoneCutter 
+language in the same manner as traditional compiled languages.  
 
-\item \textbf{Preserve Hardware Dependencies}: The CoreGen IR is designed to preserve the dependency 
-between individual hardware modules and their constituent submodules.  These dependencies are preserved 
-in a manner similar to traditional compiler technology, e.g. a \textit{directed acyclic graph} (DAG).  These 
-dependencies are subsequently utilized to analyze certain inherent properties of the DAG in order to 
-verify, optimized and document the design.  
+\item \textbf{Integration with CoreGen IR}: The StoneCutter language and associated tooling is architected 
+in a manner that permits integration with the CoreGen intermediate representation (IR)~\cite{IRSpec}.  This 
+is done in two ways.  First, users have the ability to write StoneCutter instruction definitions inline within the 
+CoreGen IR.  These \texttt{Impl} definitions are directly embedded within the overarching design.  Second, 
+the CoreGen IR can be utilized to verify the I/O architecture and instruction format for each StoneCutter 
+instruction definition.  This ensures that the prescribed instruction format in the CoreGen design is \textit{verified} 
+to be functionally correct prior to utilizing downstream synthesis tools.      
 
-\item \textbf{Support Modular Design Principles/Reuse}: One of the principle issues that plague previous 
-design workflows and paradigms is the lack of potential reuse.  The CoreGen IR provides modular reuse 
-of individual design elements as well as the ability to use design templates to rapidly build similar, but 
-specialized design elements.  Further, all individual hardware modules can be overridden using external 
-design elements in order to further construct specialized designs.  
+\item \textbf{C-Like Syntax}: Unlike other HDL approaches, the StoneCutter language utilizes a familiar 
+syntactical structure that is designed to mimic traditional C procedural methods.  Each instruction definition 
+is contained within an effective function body with incoming arguments (registers).  Arithmetic, boolean operations, 
+conditional operations and loop structures all mimic traditional procedural C syntax.  In this manner, the learning 
+curve required to be productive with StoneCutter is minimized.  
 
-\item \textbf{Support High-Level Design Verification}: One of the primary goals of the CoreGen infrastructure 
-is the ability to perform high performance, low latency design verification without the need to perform low-level 
-synthesis and simulation.  This capability is provided by the inherent ability to express complex designs 
-within the CoreGen IR.  
+\item \textbf{Support for Intrinsics}: Much in the same manner as traditional procedural languages such as C, 
+StoneCutter has support for inline intrinsic operations.  Intrinsic operations are designed to support optimized 
+circuits for pathological operations such as sign/zero extension, multi-input operations (majority vote, etc) and 
+special arithmetic operations.  As the StoneCutter language continues to develop, we plan to augment the list 
+of supported intrinsics.  
 
-\item \textbf{Support Multiple Artifact Generation}: The final goal of the CoreGen IR is to drive secondary 
-and, potentially, external tooling.  These tools provide the ability to generate multiple levels of hardware 
-design language for the complementary architecture as well as the potential to generate software 
-artifacts such as compiler tool chains from the design description.
 \end{itemize}
 
-The CoreGen IR is constructed using the standard \textit{YAML}~\cite{YAML} format.  This is a human 
-readable text structure that preserves both descriptions of individual hardware modules and 
-references between adjacent modules (the DAG from above).  YAML is formatted using blocks of 
-\textit{Collections}.  Collections describe an individual type of node (hardware module) in the CoreGen 
-IR.  For example, the notion of a register file is encapsulated in a single collection.  Each collection 
-may contain a set of \textit{sequences}.  These sequences are individual instances of the appropriate 
-module type are denoted with a name followed by a colon (NAME:).  
-For example, your design may include multiple different register files, each represented 
-as a sequence.  Each sequence will include some number of elements, each denoted with a name followed 
-by a dash (NAME-).  These sequence instances may also include a hierarchical set of sequences with scalar 
-values.  The named elements and their associated scalar values are marked using the name and colon designator (NAME:).  
-These sub-sequences and associated scalars represent the various design parameters for the 
-target instance of the target node type.  In our example, a register file may contain some number of registers.  
-Each register has a name, index value, bit width and other such parameters.  Each specific node type includes 
-unique, recognizable scalar parameters (detailed in the sections below).  The scalar values assigned to each parameter 
-may include text, boolean values (\texttt{true}, \texttt{false}), integers and floating point values.  
 
-The YAML formatting paradigm uses indentation (spaces, \textit{NOT} tabs) in order to define hierarchies 
-and inheritance.  For example, in our register node description, you'll find that there is a top-level \texttt{Register} 
-designator with multiple sequences of registers, each marked with a top-level \texttt{RegName} to denote 
-an individual register.  We see an example of this in Listing~\ref{lis:sampleindent}.  
-
-Given the textual nature of the CoreGen intermediate representation, there are no external 
-packages required to read and/or write the IR.  However, we \textit{highly} recommend that 
-you utilize the integrated CoreGen tooling in order to maintain the internal dependencies and 
-verify the syntactical correctness of the IR.  Further, parsing the YAML using non-CoreGen 
-tools may result in unresolved internal dependency links due to incorrect parsing order.  
-Regardless of the format of the IR text, the CoreGen tools will parse the file in the correct nodal 
-order.  
+The remainder of this language specification is organized as follows.  Section~\ref{sec:StoneCutterLanguage} 
+introduces the StoneCutter language and the associated syntax.  Section~\ref{sec:IntrinsicFunctions} provides 
+details associated with each of the currently supported intrinsics.  Section~\ref{sec:AppendixA} provides 
+a sample set of StoneCutter instruction definitions.  Section~\ref{sec:AppendixB} provides a consolidated list of StoneCutter 
+intrinsics.  
 
  
 %----------------------------------------------------------------------------------------
@@ -228,25 +205,299 @@ order.
 \section{StoneCutter Language}
 \label{sec:StoneCutterLanguage}
 
-
 \subsection{Overview}
 \label{sec:LangOverview}
 
+As mentioned above, the StoneCutter language is designed to take instruction definitions in a procedural syntax, 
+optimize the instruction body and output each instruction in Chisel HDL.  As shown in Figure~\ref{fig:SCArch}, input 
+files or buffers are parsed into an appropriate AST.  Instruction intrinsics are recognized and annotated in the AST.  Further, 
+register classes and registers are identified and marked as special globals.  The AST is then translated to standard 
+LLVM intermediate representation (IR).  The tools utilize standard LLVM optimization passes to optimize the instruction IR.  
+The tools then execute a series of StoneCutter-specific IR passes against the optimized LLVM IR in order to ensure that the 
+instruction design is correct per the prescribed instruction format(s).  Once verified as correct, the instruction intrinsics are expanded inline and the 
+tools generate Chisel HDL.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{figures/scarch.pdf}
+\vspace*{8pt}
+\caption{StoneCutter Architecture}
+\label{fig:SCArch}
+\end{center}
+\end{figure}
+
+Each StoneCutter input file is constructed is a specific, prescribed manner.  The organization of the data members and 
+the instruction definitions is done so specifically to elicit global and local hardware state within and across individual instructions.  
+We find a sample of the StoneCutter file layout in Listing~\ref{lis:scoverview}.  
+StoneCutter input files begin with an optional comment block describing the contents of the file.  Next, the individual register 
+classes are defining for use by the instructions.  These register classes should match the register class definitions in name and 
+layout found in the respective CoreGen design input.  Further information regarding the definition of register classes can 
+be found in Section~\ref{sec:RegClassDef}.  The next portion of the file includes the actual instruction definitions.  Each 
+instruction definition is comprised of a \textit{function}-like structure denoted with a \texttt{def} keyword.  Each instruction 
+takes some number of instruction arguments (I/O's) and contains private variables and arithmetic logic.  Notice how 
+the variable definitions are made near the top of the instruction definition.  Much like the C language, this is required 
+in StoneCutter in order to preemptively understand the scope of the temporary variables defined in the instruction.  
+Sections~\ref{sec:InstructionPrototypes}-\ref{sec:LoopOperations} 
+describe the rudimentary operations and the associated syntax that can be included in the instruction 
+definition body.  
+
+\clearpage
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={StoneCutter File Structure},captionpos=b,label={lis:scoverview}]
+#
+# Sample StoneCutter File Layout
+#
+
+# Register Class Definitions
+regclass CLASS1( DATATYPE REG1, DATATYPE REG2, ... )
+regclass CLASS2( DATATYPE REG3( DATATYPE SUBREG1, DATATYPE SUBREG2 ) )
+
+# Instruction Definitions
+def INST1( INPUT1 INPUT2 INPUT3 ) {
+	# Variable Definitions
+	DATATYPE VAR1, VAR2, VAR3
+	DATATYPE VAR4
+	
+	# Instruction Body
+	VAR4 = INPUT2 + INPUT1
+	VAR1 = INPUT1 << 1
+	VAR2 = INPUT3 << 2
+	VAR3 = INPUT1 + INPUT2
+	INPUT1 = VAR3
+}
+
+def INST2( REG1 REG3 SUBREG1 ) {
+	# Instruction Body
+	REG1 = REG3 * SUBREG1
+}
+\end{lstlisting}
+
+\subsection{Syntactical Notes}
+\label{sec:SyntacticalNotes}
+
+Prior to reading the remaining sections, we highly suggest users and readers 
+understand the following syntactical notes.  Understanding these notes will significantly 
+reduce the time required to become productive in StoneCutter.  
+
+\begin{itemize}
+\item \textbf{Semicolons}: Unlike the C language, StoneCutter does not require utilizing semicolons (\texttt{;}) 
+to terminate an expression.  All raw expressions are in static single assignment (SSA) form.  This implies 
+that each expression will be in the form of \texttt{TARGET = INPUT <OP> OUTPUT}.  The only exception 
+to this rule is when intrinsics are utilized.  A call to an intrinsic function may be
+
+\item \textbf{Complement Operations}: The StoneCutter language contains all the standard arithmetic, boolean 
+and logical operations except complements.  The bitwise complement operator from C (\texttt{\~}) is not supported 
+and the boolean complement operator from C (\texttt{!}) is not supported.  Complementing the result of a boolean 
+operation and/or performing the bitwise complement of a variable or register must be performed using the \texttt{NOT} 
+intrinsic.  See Section~\ref{sec:NOT} for more details.   
+\end{itemize}
+
+\clearpage
+\subsection{Comments}
+\label{sec:Comments}
+
+Inline comments and comment text in StoneCutter must begin with the pound (\texttt{\#}) sign.  Comments 
+may begin on new lines on inline with other code.  Examples of using comments are shown in Listing~\ref{lis:comments}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={StoneCutter Comments},captionpos=b,label={lis:comments}]
+# This is a stand alone comment
+def inst0(RA RB RT) {   # this is an inline comment
+	RT = RA + RB
+}
+\end{lstlisting}
+
+\clearpage
+\subsection{Datatypes}
+\label{sec:Datatypes}
+
+Much in the same manner as traditional programming models such as C and C++, StoneCutter 
+supports a common set of datatypes for intermediate variables and registers.  However, unlike 
+traditional programming models, hardware design languages are required to support datatypes 
+in non-byte aligned types.  In order to provide more hardware-centric support, StoneCutter supports 
+traditional data types as well as arbitrary width signed and unsigned integer types.  These types are 
+documented in Table~\ref{tab:datatypes}. 
+
+\begin{table}[h]
+\begin{center}
+\caption{StoneCutter Datatypes}
+\vspace{0.125in}
+\label{tab:datatypes}
+\begin{tabular}{|c|c|l|}
+\hline
+\textbf{Type} & \textbf{Width (in bits)} & \textbf{Description}\\
+\hline
+\texttt{bool} & 1 & Boolean.  Analogous to unsigned 1 bit integer (\texttt{u1})\\
+\hline
+\texttt{u8} & 8 & Unsigned 8 bit integer. Analogous to \texttt{uint8\_t}\\
+\hline
+\texttt{u16} & 16 & Unsigned 16 bit integer. Analogous to \texttt{uint16\_t}\\
+\hline
+\texttt{u32} & 32 & Unsigned 32 bit integer. Analogous to \texttt{uint32\_t}\\
+\hline
+\texttt{u64} & 64 & Unsigned 64 bit integer. Analogous to \texttt{uint64\_t}\\
+\hline
+\texttt{s8} & 8 & Signed 8 bit integer. Analogous to \texttt{int8\_t}\\
+\hline
+\texttt{s16} & 16 & Signed 16 bit integer. Analogous to \texttt{int16\_t}\\
+\hline
+\texttt{s32} & 32 & Signed 32 bit integer. Analogous to \texttt{int32\_t}\\
+\hline
+\texttt{s64} & 64 & Signed 64 bit integer. Analogous to \texttt{int64\_t}\\
+\hline
+\texttt{float} & 32 & Single precision floating point\\
+\hline
+\texttt{double} & 64 & Double precision floating point\\
+\hline
+\texttt{uN} & N bits & Arbitrary unsigned integer of N bits\\
+\hline
+\texttt{sN} & N bits & Arbitrary signed integer of N bits\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+An example of defining arbitrary width integers is shown in Listing~\ref{lis:arbwidth}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Arbitrary Width Datatypes},captionpos=b,label={lis:arbwidth}]
+#-- unsigned 7 bit integer "foo"
+u7 foo
+
+#-- unsigned 1024 integer "bar"
+u1024 bar
+
+#-- signed 37 integer "foobar"
+s37 foobar
+\end{lstlisting}
+
+\clearpage
 \subsection{Register Class Definitions}
 \label{sec:RegClassDef}
 
+Register classes and their associated registers are special variables in the StoneCutter language.  Each defined register 
+is must reside within its respective register class.  Registers are marked in the IR with attributes in order to ensure that 
+they belong to the correct register class when being utilized in an instruction body.  Each register is also annotated as a global 
+variable such that it can be explicitly utilized in any instruction definition body.
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Register Class Definition Syntax},captionpos=b,label={lis:regclass}]
+regclass RCName1( DATATYPE RegName1, DATATYPE RegName2, ... )
+regclass RCName2( DATATYPE RegName( DATATYPE SubReg1, DATATYPE SubReg2 ) )
+\end{lstlisting}
+
+We find the syntax for defining register classes and their associated registers in Listing~\ref{lis:regclass}.  Each register 
+class is definition is marked with a \texttt{regclass} keyword followed by the register class name.  Each of the registers 
+defined within the register class are enclosed within parenthesis.  Within the parenthesis, each register definition must 
+be preceded by its respective datatype (Section~\ref{sec:Datatypes}) and the register name.  Registers are separated 
+by commas.  For registers that have subfields, we may also explicitly annotate these within the register definition.  For 
+each register with subfields, the subfields are defined within parenthesis attached to the register definition 
+(Line 2 in Listing~\ref{lis:regclass}).  Each subfield must also contain its respective datatype.  The combined number of bits for 
+all subfields within a register definition must not exceed the total number of bits in that register.  
+
+We find an example register class definition for a simple RISC ISA in Listing~\ref{lis:sampleregclass}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Sample Register Class Definition},captionpos=b,label={lis:sampleregclass}]
+regclass GPR( u64 r0, u64 r1, u64 r2, u64 r3, u64 r4, u64 r5, u64 r6, 
+		       u64 r7, u64 r8, u64 r9, u64 r10, u64 r11, u64 r12, 
+		       u64 r13, u64 r14, u64 r15, u64 r16, u64 r17, u64 r18,
+		       u64 r19, u64 r20, u64 r21, u64 r22, u64 r23, u64 r24, 
+		       u64 r25, u64 r26, u64 r27, u64 r28, u64 r29, u64 r30,
+		       r64 r31 )
+regclass CTRL( u64 pc, u64 exc, u64 ne, u64 gt, u64 lt, u64 gte,
+			 u64 lte, u64 sp, u64 fp, u64 rp )
+\end{lstlisting}
+
+\clearpage
 \subsection{Instruction Prototypes}
 \label{sec:InstructionPrototypes}
 
+For each instruction defined in the StoneCutter syntax, we must construct 
+an instruction prototype.  The instruction prototype is an important and powerful 
+feature of the StoneCutter language.  The instruction prototype drives two major 
+features in the downstream Chisel HDL produced by a compiled StoneCutter input.  
+First, the prototype describes the attachment of the respective instruction implementation 
+to the instruction crack logic generated by the CoreGen IR.  The instruction mnemonic 
+utilized in the instruction definition must match that of the instruction mnemonic defined 
+in the CoreGen IR.  In this manner, the combined StoneCutter and CoreGen IR infrastructure 
+logic can match the instruction crack implementation and the instruction implementation (et al. ALU).  
+
+Second, the instruction definition argument list defines the set of standard I/O ports utilized by the 
+instruction.  Standard I/O ports are utilized to pipeline register read and write operations within an 
+optimized pipeline.  While it is entirely permissible to directly address registers or register files 
+from within an instruction definition that are not defined in the argument list, the eventual downstream 
+instruction implementation may require additional register read/write operations that induce pipeline 
+stalls.  Keep in mind that standard I/O ports such as the clock, register hazarding and stall signals 
+are automatically instantiated.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Instruction Prototype Format},captionpos=b,label={lis:instprototypeformat}]
+def INSTNAME( ARG1 ARG2 ARG3 ... ) {
+}
+\end{lstlisting}
+
+As mentioned above, the instruction prototype includes two main structures: the instruction 
+name and the instruction arguments (Listing~\ref{lis:instprototypeformat}).  The instruction name must match the associated instruction 
+name defined in the CoreGen IR.  The instruction name is case sensitive.  
+See the CoreGen IR specification for more information~\ref{IRSpec}.  The instruction 
+argument list contains a set of register or register class names that define the standard I/O functions 
+for the optimized pipeline.  The instruction argument list must match the set of register or register file designators 
+in the instruction format for the target instruction. 
+  
+Register arguments are interpreted literally.  In this manner, a register I/O is performed to the specific 
+register index denoted by the target register.  Register class arguments are interpreted logically.  The register 
+class arguments utilize the index specified in the assembled instruction payload to load or store from the respective 
+register index in the target register file.  
+
+We see an example of a series of instruction prototypes in Listing~\ref{lis:instprototype}.  We utilize the register class 
+and register definitions from Section~\ref{sec:RegClassDef}.  We define three instructions, \texttt{add}, \texttt{move} 
+and \texttt{inc}.  The \texttt{add} instruction prototype contains a single argument, \texttt{GPR}, that defines I/O ports 
+to/from the GPR register class.  The \texttt{move} instruction utilizes both the \texttt{GPR} and the \texttt{CTRL} 
+register classes.  Finally, the \texttt{inc} instruction utilizes the explicit \texttt{pc} register as well as the \texttt{GPR} 
+register class.  Notice that the arguments within the prototype are \textbf{not} separated by commas.  Further, we see 
+that the associated instruction definition body is contained within a set of brackets (\texttt{\{\}}).  
+
+\clearpage
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Instruction Prototype Format},captionpos=b,label={lis:instprototype}]
+regclass GPR( u64 r0, u64 r1, u64 r2, u64 r3, u64 r4, u64 r5, u64 r6, 
+		       u64 r7, u64 r8, u64 r9, u64 r10, u64 r11, u64 r12, 
+		       u64 r13, u64 r14, u64 r15, u64 r16, u64 r17, u64 r18,
+		       u64 r19, u64 r20, u64 r21, u64 r22, u64 r23, u64 r24, 
+		       u64 r25, u64 r26, u64 r27, u64 r28, u64 r29, u64 r30,
+		       r64 r31 )
+regclass CTRL( u64 pc, u64 exc, u64 ne, u64 gt, u64 lt, u64 gte,
+			 u64 lte, u64 sp, u64 fp, u64 rp )
+
+# add operation			 
+def add( GPR ){
+}
+
+# move between GPR and CTRL 
+def move( GPR CTRL ){
+}
+
+# increment PC by GPR
+def inc( pc GPR ){
+}
+
+
+\end{lstlisting}
+
+\clearpage
 \subsection{Variable Definitions}
 \label{sec:Variable Definitions}
 
+\clearpage
 \subsection{Arithmetic Operations}
 \label{sec:Arithmetic Operations}
 
+\clearpage
 \subsection{Conditional Operations}
 \label{sec:ConditionalOperations}
 
+\clearpage
 \subsection{Loop Operations}
 \label{sec:LoopOperations}
 
@@ -266,62 +517,561 @@ order.
 \subsubsection{CLZ}
 \label{sec:CLZ}
 
+\begin{table}[h]
+\begin{center}
+\caption{CLZ Intrinsic}
+\vspace{0.125in}
+\label{tab:CLZIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{COMPRESS}
 \label{sec:COMPRESS}
 
+\begin{table}[h]
+\begin{center}
+\caption{COMPRESS Intrinsic}
+\vspace{0.125in}
+\label{tab:COMPRESSIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{COMPRESSM}
 \label{sec:COMPRESSM}
 
+\begin{table}[h]
+\begin{center}
+\caption{COMPRESSM Intrinsic}
+\vspace{0.125in}
+\label{tab:COMPRESSMIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{CTZ}
 \label{sec:CTZ}
 
+\begin{table}[h]
+\begin{center}
+\caption{CTZ Intrinsic}
+\vspace{0.125in}
+\label{tab:CTZIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{DOZ}
 \label{sec:DOZ}
 
+\begin{table}[h]
+\begin{center}
+\caption{DOZ Intrinsic}
+\vspace{0.125in}
+\label{tab:DOZIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{EXTRACTS}
 \label{sec:EXTRACTS}
 
+\begin{table}[h]
+\begin{center}
+\caption{EXTRACTS Intrinsic}
+\vspace{0.125in}
+\label{tab:EXTRACTSIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{EXTRACTZ}
 \label{sec:EXTRACTZ}
 
+\begin{table}[h]
+\begin{center}
+\caption{EXTRACTZ Intrinsic}
+\vspace{0.125in}
+\label{tab:EXTRACTZIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{INSERTS}
 \label{sec:INSERTS}
 
+\begin{table}[h]
+\begin{center}
+\caption{INSERTS Intrinsic}
+\vspace{0.125in}
+\label{tab:INSERTSIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{INSERTZ}
 \label{sec:INSERTZ}
 
+\begin{table}[h]
+\begin{center}
+\caption{INSERTZ Intrinsic}
+\vspace{0.125in}
+\label{tab:INSERTZIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{MAJ}
 \label{sec:MAJ}
 
+\begin{table}[h]
+\begin{center}
+\caption{MAJ Intrinsic}
+\vspace{0.125in}
+\label{tab:MAJIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{MAX}
 \label{sec:MAX}
 
+\begin{table}[h]
+\begin{center}
+\caption{MAX Intrinsic}
+\vspace{0.125in}
+\label{tab:MAXIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{MERGE}
 \label{sec:MERGE}
 
+\begin{table}[h]
+\begin{center}
+\caption{MERGE Intrinsic}
+\vspace{0.125in}
+\label{tab:MERGEIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{MIN}
 \label{sec:MIN}
 
+\begin{table}[h]
+\begin{center}
+\caption{MIN Intrinsic}
+\vspace{0.125in}
+\label{tab:MINIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{NOT}
 \label{sec:NOT}
 
+\begin{table}[h]
+\begin{center}
+\caption{NOT Intrinsic}
+\vspace{0.125in}
+\label{tab:NOTIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{POPCOUNT}
 \label{sec:POPCOUNT}
 
+\begin{table}[h]
+\begin{center}
+\caption{POPCOUNT Intrinsic}
+\vspace{0.125in}
+\label{tab:POPCOUNTIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{REVERSE}
 \label{sec:REVERSE}
 
+\begin{table}[h]
+\begin{center}
+\caption{REVERSE Intrinsic}
+\vspace{0.125in}
+\label{tab:REVERSEIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{ROTL}
 \label{sec:ROTL}
 
+\begin{table}[h]
+\begin{center}
+\caption{ROTL Intrinsic}
+\vspace{0.125in}
+\label{tab:ROTLIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{ROTR}
 \label{sec:ROTR}
 
+\begin{table}[h]
+\begin{center}
+\caption{ROTR Intrinsic}
+\vspace{0.125in}
+\label{tab:ROTRIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{SEXT}
 \label{sec:SEXT}
 
+\begin{table}[h]
+\begin{center}
+\caption{SEXT Intrinsic}
+\vspace{0.125in}
+\label{tab:SEXTIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{ZEXT}
 \label{sec:ZEXT}
+
+\begin{table}[h]
+\begin{center}
+\caption{ZEXT Intrinsic}
+\vspace{0.125in}
+\label{tab:ZEXTIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{ZEXT(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
 
 \clearpage
 \subsection{Memory Intrinsics}
@@ -330,11 +1080,57 @@ order.
 \subsubsection{LOAD}
 \label{sec:LOAD}
 
+\begin{table}[h]
+\begin{center}
+\caption{LOAD Intrinsic}
+\vspace{0.125in}
+\label{tab:LOADIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{STORE}
 \label{sec:STORE}
 
-
-
+\begin{table}[h]
+\begin{center}
+\caption{STORE Intrinsic}
+\vspace{0.125in}
+\label{tab:STOREIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
 
 %----------------------------------------------------------------------------------------
 %	SECTION: Appendix A: Sample IR
@@ -352,6 +1148,63 @@ order.
 \clearpage
 \section{Appendix B: Intrinsic Function Table}
 \label{sec:AppendixB}
+
+\begin{table}[h]
+\begin{center}
+\caption{StoneCutter Intrinsics}
+\vspace{0.125in}
+\label{tab:scintrins}
+\begin{tabular}{|c|c|c|l|l}
+\hline
+\textbf{Intrinsic} & \textbf{Inputs} & \textbf{Outputs} & \textbf{Description}\\
+\hline
+\hyperref[sec:CLZ]{\texttt{CLZ}} & 0 & 0 & Count leading zero\\
+\hline
+\hyperref[sec:COMPRESS]{\texttt{COMPRESS}} & 0 & 0 & Bit compress\\
+\hline
+\hyperref[sec:COMPRESSM]{\texttt{COMPRESSM}} & 0 & 0 & Bit compress under mask\\
+\hline
+\hyperref[sec:CTZ]{\texttt{CTZ}} & 0 & 0 & Count trailing zero\\
+\hline
+\hyperref[sec:DOZ]{\texttt{DOZ}} & 0 & 0 & First grade subtraction\\
+\hline
+\hyperref[sec:EXTRACTS]{\texttt{EXTRACTS}} & 0 & 0 & Bit extract and sign extend\\
+\hline
+\hyperref[sec:EXTRACTZ]{\texttt{EXTRACTZ}} & 0 & 0 & Bit extract and zero extend\\
+\hline
+\hyperref[sec:INSERTS]{\texttt{INSERTS}} & 0 & 0 & Bit insert and sign extend\\
+\hline
+\hyperref[sec:INSERTZ]{\texttt{INSERTZ}} & 0 & 0 & Bit insert and zero extend\\
+\hline
+\hyperref[sec:MAJ]{\texttt{MAJ}} & 0 & 0 & Majority vote\\
+\hline
+\hyperref[sec:MAX]{\texttt{MAX}} & 0 & 0 & Max\\
+\hline
+\hyperref[sec:MERGE]{\texttt{MERGE}} & 0 & 0 & Merge under mask\\
+\hline
+\hyperref[sec:MIN]{\texttt{MIN}} & 0 & 0 & Min\\
+\hline
+\hyperref[sec:NOT]{\texttt{NOT}} & 0 & 0 & Bit complement\\
+\hline
+\hyperref[sec:POPCOUNT]{\texttt{POPCOUNT}} & 0 & 0 & Population count\\
+\hline
+\hyperref[sec:REVERSE]{\texttt{REVERSE}} & 0 & 0 & Bit reverse\\
+\hline
+\hyperref[sec:ROTL]{\texttt{ROTL}} & 0 & 0 & Rotate left\\
+\hline
+\hyperref[sec:ROTR]{\texttt{ROTR}} & 0 & 0 & Rotate right\\
+\hline
+\hyperref[sec:SEXT]{\texttt{SEXT}} & 0 & 0 & Signe extend\\
+\hline
+\hyperref[sec:ZEXT]{\texttt{ZEXT}} & 0 & 0 & Zero extend\\
+\hline
+\hyperref[sec:LOAD]{\texttt{LOAD}} & 0 & 0 & Memory load\\
+\hline
+\hyperref[sec:STORE]{\texttt{STORE}} & 0 & 0 & Memory store\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
 
 %----------------------------------------------------------------------------------------
 %	BIBLIOGRAPHY
