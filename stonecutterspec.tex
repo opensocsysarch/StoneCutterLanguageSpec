@@ -248,6 +248,9 @@ definition body.
 # Sample StoneCutter File Layout
 #
 
+# Instruction Formats
+instformat FORMAT1( FIELDTYPE FIELD1, FIELDTYPE FIELD2, ... )
+
 # Register Class Definitions
 regclass CLASS1( DATATYPE REG1, DATATYPE REG2, ... )
 regclass CLASS2( DATATYPE REG3( DATATYPE SUBREG1, DATATYPE SUBREG2 ) )
@@ -372,6 +375,68 @@ s37 foobar
 \end{lstlisting}
 
 \clearpage
+\subsection{Instruction Format Definitions}
+\label{sec:InstFormatDef}
+
+Instruction formats and their associated fields are special variables in the StoneCutter language.  Each defined 
+instruction field must reside within a respective instruction format.  Instruction fields are marked in the IR with 
+attributes in order to ensure that they are correctly associated with the correct instruction format.  Further, for each 
+field that is denoted as a register field, the associated register class must also be specified in order to correctly 
+link the register read datapath to the correct register file.  Each of the associated fields is annotated as a global 
+variable such that is can be explicitly utilized in any instruction prototype or instruction body.  
+
+\begin{table}[h]
+\begin{center}
+\caption{StoneCutter Instruction Format Field Types}
+\vspace{0.125in}
+\label{tab:instformatfields}
+\begin{tabular}{|c|c|c|l|}
+\hline
+\textbf{Field} & \textbf{Mnemonic} & Read/Write Access & \textbf{Description}\\
+\hline
+\multirow{2}{*}{Instruction Encodings} & \texttt{enc} & Read-Only & Instruction encodings such as\\
+												  & & & opcodes and function codes\\
+\hline
+\multirow{2}{*}{Immediate Values} & \texttt{imm} & Read-Only & Immediate values encoded in the\\
+											      & & & instruction payload\\
+\hline
+\multirow{3}{*}{Register Indices} & \texttt{reg[REGCLASS]} & Read-Write & Register index encodings.\\
+														& & & Must include the respective\\
+														& & & REGCLASS\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+For each field in the instruction format, the respective field is designated with a field type and a field name.  There are 
+three types of instruction field types.  First, instruction fields denoted as encoding fields are utilized to designate 
+individual instruction encodings such as opcodes and function codes in RISC architectures.  When utilizing these fields 
+in the implementation of an instruction, the value contained within the field is utilized.  For example, if an instruction 
+defines a field \texttt{opc} that contains the values 0x0A hex, reading from this field will provide the exact value 0x0A hex.  
+Second, immediate fields are immediate values encoded directly within the instruction payload.  Reading from immediate 
+fields from within the instruction payload will read the literal immediate from the instruction payload.  Finally, register fields 
+denote register indices that access a single register file.  Reading from this field directly will not deliver the index.  Rather, accessing 
+a register field will read or write the value at the designated index of the target register file.    
+For fields that are denoted as register class fields (\texttt{reg}), the associated register class (register file) must also be specified.  
+We summarize the permissible instruction field types in Table~\ref{tab:instformatfields}.  Further, the syntax for the an entire instruction 
+format block is shown in Listing~\ref{lis:instformat}.  Encoding and immediate fields are always marked as read-only.  Only 
+register fields may be written to.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Instruction Format Definition Syntax},captionpos=b,label={lis:instformat}]
+instformat FName1( FIELDTYPE FIELD1, FIELDTYPE FIELD2, ... )
+instformat FName2( reg[REGCLASS] FIELD1, ... )
+\end{lstlisting}
+
+We find an example instruction format definition for a simple RISC ISA with encodings for an opcode and function code 
+as well as three register fields in Listing~\ref{lis:sampleinstformat}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Sample Instruction Format Definition},captionpos=b,label={lis:sampleinstformat}]
+instformat RISC( enc opc, enc func, reg[GPR] RT, reg[GPR] RA, reg[GPR] RB )
+\end{lstlisting}
+
+\clearpage
 \subsection{Register Class Definitions}
 \label{sec:RegClassDef}
 
@@ -488,6 +553,48 @@ def inc( pc GPR ){
 \clearpage
 \subsection{Variable Definitions}
 \label{sec:Variable Definitions}
+
+In addition to utilizing register classes and register fields as variables within 
+an instruction definition, users may also specify local, temporary variables 
+in the instruction definition body.  These values may be utilized as temporary 
+storage for complex, multi-stage operations, loop counters and other intermediate 
+state.  The StoneCutter compiler infrastructure will make every effort to minimize the overall 
+hardware impact of these intermediate values to the size and timing of the target design.  As a result, 
+these temporary values may be optimized out and/or reused by adjacent instructions 
+in the generated downstream Chisel HDL.  
+
+In the same manner as individual registers, variables are required to have a defined type.  
+These types follow the same convention as defined in Section~\ref{sec:Datatypes}.  Variable 
+names may not collide with existing instruction format fields or register names.  Much in the same 
+manner as the C language, StoneCutter permits users to define multiple, independent variables 
+using the same datatype.  The format of 
+variable definitions is noted in Listing~\ref{lis:vardefs}.  We provide an example of a series of 
+variable definitions in Listing~\ref{lis:samplevardefs}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Variable Definitions},captionpos=b,label={lis:vardefs}]
+def INST( ... ){
+  DATATYPE name1
+  DATATYPE name2, name3, ...
+}
+\end{lstlisting}
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Sample Variable Definitions},captionpos=b,label={lis:samplevardefs}]
+instformat RISC( enc opc, enc func, reg[GPR] RT, reg[GPR] RA, reg[GPR] RB )
+
+def add( RT RA RB ){
+  u64 var1, var2
+  if( RA == RB ){
+    var1 = 5
+    var2 = 6
+  }else{
+    var1 = 7
+    var2 = 998
+  }
+  RT = var1 & var2
+}
+\end{lstlisting}
 
 \clearpage
 \subsection{Arithmetic Operations}
@@ -1087,18 +1194,17 @@ def inc( pc GPR ){
 \label{tab:LOADIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{LOAD(RA)}\\
 \hline
 \textbf{Description} & foo\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the target address \\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = LOAD(RA)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & The data from the load operation\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1124,6 +1230,63 @@ def inc( pc GPR ){
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
                           			  &   STORE(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
+\subsubsection{LOADELEM}
+\label{sec:LOADELEM}
+
+\begin{table}[h]
+\begin{center}
+\caption{LOADELEM Intrinsic}
+\vspace{0.125in}
+\label{tab:LOADELEMIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{LOADELEM(RA,RB)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the target address\\
+                          			     & RB: Contains the size of the element \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   RT = LOADELEM(RA, RB)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & The data from the load operation\\                                                    
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
+\subsubsection{STOREELEM}
+\label{sec:STOREELEM}
+
+\begin{table}[h]
+\begin{center}
+\caption{STOREELEM Intrinsic}
+\vspace{0.125in}
+\label{tab:STOREELEMIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{STOREELEM(RA,RB,RC)}\\
+\hline
+\textbf{Description} & foo\\
+\hline
+\multirow{3}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
+                          			     & RB: Contains the target address \\
+			     			     & RC: Contains the size of the element \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RC RT)\{\\
+                          			  &   STOREELEM(RA, RB, RC)\\
                                                     & \}\\
 \hline
 \textbf{Return} & Nothing is returned\\                                                    
