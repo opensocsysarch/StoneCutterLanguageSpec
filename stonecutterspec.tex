@@ -392,7 +392,7 @@ variable such that is can be explicitly utilized in any instruction prototype or
 \label{tab:instformatfields}
 \begin{tabular}{|c|c|c|l|}
 \hline
-\textbf{Field} & \textbf{Mnemonic} & Read/Write Access & \textbf{Description}\\
+\textbf{Field} & \textbf{Mnemonic} & \textbf{Read/Write Access} & \textbf{Description}\\
 \hline
 \multirow{2}{*}{Instruction Encodings} & \texttt{enc} & Read-Only & Instruction encodings such as\\
 												  & & & opcodes and function codes\\
@@ -506,8 +506,8 @@ As mentioned above, the instruction prototype includes two main structures: the 
 name and the instruction arguments (Listing~\ref{lis:instprototypeformat}).  The instruction name must match the associated instruction 
 name defined in the CoreGen IR.  The instruction name is case sensitive.  
 See the CoreGen IR specification for more information~\ref{IRSpec}.  The instruction 
-argument list contains a set of register or register class names that define the standard I/O functions 
-for the optimized pipeline.  The instruction argument list must match the set of register or register file designators 
+argument list contains a set of register, instruction field or register class names that define the standard I/O functions 
+for the optimized pipeline.  The instruction argument list must match the set of register, instruction format fields or register file designators 
 in the instruction format for the target instruction. 
   
 Register arguments are interpreted literally.  In this manner, a register I/O is performed to the specific 
@@ -516,16 +516,17 @@ class arguments utilize the index specified in the assembled instruction payload
 register index in the target register file.  
 
 We see an example of a series of instruction prototypes in Listing~\ref{lis:instprototype}.  We utilize the register class 
-and register definitions from Section~\ref{sec:RegClassDef}.  We define three instructions, \texttt{add}, \texttt{move} 
-and \texttt{inc}.  The \texttt{add} instruction prototype contains a single argument, \texttt{GPR}, that defines I/O ports 
+and register definitions from Section~\ref{sec:RegClassDef}.  We define four instructions, \texttt{add}, \texttt{move}, 
+\texttt{inc} and \texttt{sub}.  The \texttt{add} instruction prototype contains a single argument, \texttt{GPR}, that defines I/O ports 
 to/from the GPR register class.  The \texttt{move} instruction utilizes both the \texttt{GPR} and the \texttt{CTRL} 
-register classes.  Finally, the \texttt{inc} instruction utilizes the explicit \texttt{pc} register as well as the \texttt{GPR} 
-register class.  Notice that the arguments within the prototype are \textbf{not} separated by commas.  Further, we see 
+register classes.  The \texttt{inc} instruction utilizes the explicit \texttt{pc} register as well as the \texttt{GPR} 
+register class.  Finally, the \texttt{sub} Notice that the arguments within the prototype are \textbf{not} separated by commas.  Further, we see 
 that the associated instruction definition body is contained within a set of brackets (\texttt{\{\}}).  
 
 \clearpage
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Instruction Prototype Format},captionpos=b,label={lis:instprototype}]
+instformat RISC( enc opc, enc func, reg[GPR] RT, reg[GPR] RA, reg[GPR] RB )
 regclass GPR( u64 r0, u64 r1, u64 r2, u64 r3, u64 r4, u64 r5, u64 r6, 
 		       u64 r7, u64 r8, u64 r9, u64 r10, u64 r11, u64 r12, 
 		       u64 r13, u64 r14, u64 r15, u64 r16, u64 r17, u64 r18,
@@ -547,7 +548,9 @@ def move( GPR CTRL ){
 def inc( pc GPR ){
 }
 
-
+# subtract RT = RA - RB
+def sub( RT RA RB ){
+}
 \end{lstlisting}
 
 \clearpage
@@ -600,13 +603,80 @@ def add( RT RA RB ){
 \subsection{Arithmetic Operations}
 \label{sec:Arithmetic Operations}
 
+The StoneCutter language supports the standard set of arithmetic operations as defined 
+by other C-like languages.  However, given the nature of compiling the StoneCutter language 
+to a target-specific circuit design, the StoneCutter compiler and tool chain enforces a number 
+of idiosyncratic features when processing variables for arithmetic operations.  First, the StoneCutter 
+language scans the variables associated with the left hand side of a target arithmetic operation and automatically 
+converts the operation to perform arithmetic using the width of the largest variable.  Further, when 
+storing the result of an operation to a target variable or register (right hand side of an operation), StoneCutter 
+converts the resulting data to saturate the bit space of the target.  The process of converting 
+arithmetic operations and variables to larger bit space is performed using zero extension in order to avoid 
+poisoning the numerical consistency of an operation.  Users may override this behavior by utilizing 
+sign and zero extended intrinsics (see Section~\ref{sec:ArithIntrinsics}).
+
+We provide a summary of permissible arithmetic operations in Table~\ref{tab:arithops}.   
+
+\begin{table}[h]
+\begin{center}
+\caption{StoneCutter Arithmetic Operations}
+\vspace{0.125in}
+\label{tab:arithops}
+\begin{tabular}{|c|c|l|}
+\hline
+\textbf{Operator} & \textbf{Example} & \textbf{Description}\\
+\hline
+\texttt{=} & \texttt{RT = RB} & Assignment operation\\
+\hline
+\texttt{+} & \texttt{RT = RA + RB} & Add operation\\
+\hline
+\texttt{-} & \texttt{RT = RA - RB} & Subtract operation\\
+\hline
+\texttt{*} & \texttt{RT = RA * RB} & Multiplication operation\\
+\hline
+\texttt{\textbackslash} & \texttt{RT = RA \textbackslash~RB} & Division operation\\
+\hline
+\texttt{\%} & \texttt{RT = RA \% RB} & Modulo operation\\
+\hline
+\texttt{\&} & \texttt{RT = RA \& RB} & Bitwise \textit{and} operation\\
+\hline
+\texttt{|} & \texttt{RT = RA | RB} & Bitwise \textit{or} operation\\
+\hline
+\texttt{$\wedge$} & \texttt{RT = RA $\wedge$ RB} & Bitwise \textit{xor} operation\\
+\hline
+\texttt{<<} & \texttt{RT = RA << RB} & Shift left operation\\
+\hline
+\texttt{>>} & \texttt{RT = RA >> RB|} & Shift right operation\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\textit{NOTE:} Please note that StoneCutter does not currently support the bitwise complement 
+operation (\textasciitilde) and the logical not operation (!).  
+
 \clearpage
 \subsection{Conditional Operations}
 \label{sec:ConditionalOperations}
 
+\subsubsection{Conditional Operators}
+\label{sec:ConditionalOperators}
+
+\subsubsection{Flow Control}
+\label{sec:FlowControl}
+
 \clearpage
 \subsection{Loop Operations}
 \label{sec:LoopOperations}
+
+\subsubsection{For Loops}
+\label{sec:ForLoops}
+
+\subsubsection{While Loops}
+\label{sec:WhileLoops}
+
+\subsubsection{Do While Loops}
+\label{sec:DoWhileLoops}
 
 %----------------------------------------------------------------------------------------
 %	SECTION 3
@@ -1364,6 +1434,10 @@ def add( RT RA RB ){
 \hyperref[sec:LOAD]{\texttt{LOAD}} & 0 & 0 & Memory load\\
 \hline
 \hyperref[sec:STORE]{\texttt{STORE}} & 0 & 0 & Memory store\\
+\hline
+\hyperref[sec:LOADELEM]{\texttt{LOADELEM}} & 0 & 0 & Memory element load\\
+\hline
+\hyperref[sec:STOREELEM]{\texttt{STOREELEM}} & 0 & 0 & Memory element store\\
 \hline
 \end{tabular}
 \end{center}
