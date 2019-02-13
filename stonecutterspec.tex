@@ -672,11 +672,94 @@ operation (\textasciitilde) and the logical not operation (!).
 \subsubsection{For Loops}
 \label{sec:ForLoops}
 
+The first style of loop statement supported by the StoneCutter language is the 
+\textit{for} loop.  The StoneCutter for loop is structured in a similar manner as the 
+traditional C for loop.  The loop is provided with a base case loop counter, a loop 
+termination statement and an optional iterator trip step.  The loop counter 
+can be an existing variable or a newly defined temporary variable.  Unlike other 
+temporary variables, loop trip counters can be defined inline within the for loop 
+structure.  The loop termination statement includes one or more comparison 
+statements that define the termination state of the loop using the loop trip 
+counter.  The optional loop trip counter iterator can be an immediate value or a variable.  
+If this optional value is not specified, the iterator value is assumed to be "1".  The for loop body 
+is contained with brackets (\texttt{\{\}}) and may include any other set of StoneCutter statements.  The for loop 
+syntax is depicted in Listing~\ref{lis:forloopsyntax}.     
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={For Loop Syntax},captionpos=b,label={lis:forloopsyntax}]
+for( LOOPTRIP = BASE; LOOPTRIP <COMPARATOR> TERMINATOR ){
+  # for loop body
+}
+
+for( LOOPTRIP = BASE; LOOPTRIP <COMPARATOR> TERMINATOR; ITERATOR ){
+  # for loop body
+}
+\end{lstlisting}
+
+The comparator operation utilized to terminate the loop is one of the standard 
+variable comparison operations from C-like languages.  We summarize these operators in 
+Table~\ref{tab:compreops}.  
+
+\begin{table}[h]
+\begin{center}
+\caption{StoneCutter Comparison Operations}
+\vspace{0.125in}
+\label{tab:compreops}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Operator} & \textbf{Description} \\
+\texttt{<} & Less Than\\
+\hline
+\texttt{>} & Greater Than\\
+\hline
+\texttt{<=} & Less Than Or Equal To\\
+\hline
+\texttt{>=} & Greater Than Or Equal To\\
+\hline
+\texttt{==} & Equal To\\
+\hline
+\texttt{!=} & Not Equal To\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+We provide a set of example for loops in Listing~\ref{lis:sampleforloopsyntax}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Sample For Loop Syntax},captionpos=b,label={lis:sampleforloopsyntax}]
+def add( RT RA RB ){
+  for( i = 1; i < RA ){
+    RB = RB + 1
+  }
+  for( j = 0; i< RB; 5 )
+    RT = RB | RT
+  }
+  u64 var1
+  for( var = 1024; i <= RT; RB ){
+    RT = var
+  }
+}
+\end{lstlisting}
+
 \subsubsection{While Loops}
 \label{sec:WhileLoops}
 
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={While Loop Syntax},captionpos=b,label={lis:whileloopsyntax}]
+while( COMPARATOR STATEMENT ){
+  # while loop body
+}
+\end{lstlisting}
+
 \subsubsection{Do While Loops}
 \label{sec:DoWhileLoops}
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Do While Loop Syntax},captionpos=b,label={lis:dowhileloopsyntax}]
+do{
+}while( COMPARATOR STATEMENT )
+\end{lstlisting}
 
 %----------------------------------------------------------------------------------------
 %	SECTION 3
