@@ -650,7 +650,7 @@ We provide a summary of permissible arithmetic operations in Table~\ref{tab:arit
 \hline
 \texttt{<<} & \texttt{RT = RA << RB} & Shift left operation\\
 \hline
-\texttt{>>} & \texttt{RT = RA >> RB|} & Shift right operation\\
+\texttt{>>} & \texttt{RT = RA >> RB} & Shift right operation\\
 \hline
 \end{tabular}
 \end{center}
@@ -663,11 +663,86 @@ operation (\textasciitilde) and the logical not operation (!).
 \subsection{Conditional Operations}
 \label{sec:ConditionalOperations}
 
-\subsubsection{Conditional Operators}
-\label{sec:ConditionalOperators}
+\subsubsection{Boolean Operators}
+\label{sec:BooleanOperators}
 
+The StoneCutter language syntax supports the standard set of boolean 
+operators as is defined by other C-like languages.  The one exception being the 
+logical not operation (!).  StoneCutter does not support the logical not operation for 
+boolean operations.  Rather, users seeking to complement the result of a boolean operation 
+of a singular boolean value must utilize the \texttt{NOT} intrinsic (Section~\ref{sec:NOT}).
+
+We provide a summary of permissible boolean operations in Table~\ref{tab:boolops}.
+
+\begin{table}[h]
+\begin{center}
+\caption{StoneCutter Boolean Operations}
+\vspace{0.125in}
+\label{tab:boolops}
+\begin{tabular}{|c|c|l|}
+\hline
+\textbf{Operator} & \textbf{Example} & \textbf{Description}\\
+\hline
+\texttt{==} & \texttt{RA == RB} & Logical equivalence\\
+\hline
+\texttt{!=} & \texttt{RA != RB} & Logical in-equivalence\\
+\hline
+\texttt{<} & \texttt{RA < RB} & Less than\\
+\hline
+\texttt{>} & \texttt{RA > RB} & Greater than\\
+\hline
+\texttt{<=} & \texttt{RA <= RB} & Less than or equal to\\
+\hline
+\texttt{>=} & \texttt{RA >= RB} & Greater than or equal to\\
+\hline
+\texttt{\&\&} & \texttt{RA \&\& RB} & Logical and\\
+\hline
+\texttt{||} & \texttt{RA || RB} & Logical or\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{Flow Control}
 \label{sec:FlowControl}
+
+The StoneCutter language provides support for C-like conditional flow 
+control using standard \textit{if-else} clauses.  The statements contained 
+within these clauses must result in a boolean value that is interrogated in order 
+to determine which body of code (circuit) to execute.  Flow control operations 
+are required to include a single \textit{if} statement.  They may optionally include 
+a complementary \textit{else} statement.   
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Flow Control Syntax},captionpos=b,label={lis:ifelsesyntax}]
+if( BOOLEAN OPERATION){
+  # Conditional body
+}
+
+if( BOOLEAN OPERATION){
+  # Conditional if body
+}else{
+  # Conditional else body
+}
+\end{lstlisting}
+
+We provide a set of example conditional flow control operations in Listing~\ref{lis:sampleifelsesyntax}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Sample If-Else Syntax},captionpos=b,label={lis:sampleifelsesyntax}]
+def add( RT RA RB ){
+  if( RA > RB ){
+    RB = RA + RB
+  }
+  
+  if( RB < RT ){
+    RT = RB
+  }else{
+    RT = RT << 1
+  }
+}
+\end{lstlisting}
 
 \clearpage
 \subsection{Loop Operations}
@@ -795,6 +870,7 @@ Listing~\ref{lis:dowhileloopsyntax}.
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Do While Loop Syntax},captionpos=b,label={lis:dowhileloopsyntax}]
 do{
+  # do while loop body
 }while( COMPARATOR STATEMENT )
 \end{lstlisting}
 
