@@ -570,7 +570,9 @@ In the same manner as individual registers, variables are required to have a def
 These types follow the same convention as defined in Section~\ref{sec:Datatypes}.  Variable 
 names may not collide with existing instruction format fields or register names.  Much in the same 
 manner as the C language, StoneCutter permits users to define multiple, independent variables 
-using the same datatype.  The format of 
+using the same datatype.  Variables must also be defined at the \textbf{top} of an instruction 
+definition.  This permits StoneCutter to sufficiently scope temporary variables across the body 
+of an instruction.  The format of 
 variable definitions is noted in Listing~\ref{lis:vardefs}.  We provide an example of a series of 
 variable definitions in Listing~\ref{lis:samplevardefs}.  
 
@@ -579,6 +581,8 @@ variable definitions in Listing~\ref{lis:samplevardefs}.
 def INST( ... ){
   DATATYPE name1
   DATATYPE name2, name3, ...
+
+  <instruction body>
 }
 \end{lstlisting}
 
@@ -729,13 +733,13 @@ We provide a set of example for loops in Listing~\ref{lis:sampleforloopsyntax}.
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Sample For Loop Syntax},captionpos=b,label={lis:sampleforloopsyntax}]
 def add( RT RA RB ){
+  u64 var1
   for( i = 1; i < RA ){
     RB = RB + 1
   }
   for( j = 0; i< RB; 5 )
     RT = RB | RT
   }
-  u64 var1
   for( var = 1024; i <= RT; RB ){
     RT = var
   }
@@ -745,6 +749,14 @@ def add( RT RA RB ){
 \subsubsection{While Loops}
 \label{sec:WhileLoops}
 
+The second style of loop supported by the StoneCutter language is the \textit{while} loop.  The StoneCutter 
+while loop is structured in a similar manner as the traditional C while loop.  The loop is provided with a 
+termination statement in the form of a comparator.  It is up to the user to modify the variable utilized 
+in the comparator statement such that a valid termination state can be reached.  StoneCutter does not otherwise 
+validate the potential for infinite while loops.  The while loop body is contained within brackets 
+(\texttt{\{\}}) and may include any other set of StoneCutter statements.  The while loop syntax is depicted in 
+Listing~\ref{lis:whileloopsyntax}.  
+
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={While Loop Syntax},captionpos=b,label={lis:whileloopsyntax}]
 while( COMPARATOR STATEMENT ){
@@ -752,13 +764,55 @@ while( COMPARATOR STATEMENT ){
 }
 \end{lstlisting}
 
+We provide a set of example while loops in Listing~\ref{lis:samplewhileloopsyntax}.
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Sample While Loop Syntax},captionpos=b,label={lis:samplewhileloopsyntax}]
+def add( RT RA RB ){
+  u64 var1 = 1024
+  while( RA < RB ){
+    RT = RB << 1
+    RA = RA + 1
+  }
+  while( var1 >= RT ){
+    var1 = var1 - 5
+    RT = RT << 1
+  }
+}
+\end{lstlisting}
+
+\clearpage
 \subsubsection{Do While Loops}
 \label{sec:DoWhileLoops}
+
+The final style of loop supported by the StoneCutter language is the \textit{do while} loop.  The StoneCutter do while 
+loop is structured in a similar manner as the traditional the traditional C do while loop.  The loop is provided with 
+an entry state provided by a \textit{do} statement.  The do statement is followed by a loop body contained within brackets 
+(\texttt{\{\}}).  The do while loop termination statement follows the last bracket and is contained in a \textit{while} block similar 
+in form as the while loop structure (Section~\ref{sec:WhileLoops}).  The while loop syntax is depicted in 
+Listing~\ref{lis:dowhileloopsyntax}.   
 
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Do While Loop Syntax},captionpos=b,label={lis:dowhileloopsyntax}]
 do{
 }while( COMPARATOR STATEMENT )
+\end{lstlisting}
+
+We provide a set of example do while loops in Listing~\ref{lis:sampledowhileloopsyntax}.
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Sample Do While Loop Syntax},captionpos=b,label={lis:sampledowhileloopsyntax}]
+def add( RT RA RB ){
+  u64 var1 = 1024
+  do{
+    RT = RB << 1
+    RA = RA + 1
+  }while( RA < RB )  
+  do{
+    var1 = var1 - 5
+    RT = RT << 1
+  }while( var1 >= RT )
+}
 \end{lstlisting}
 
 %----------------------------------------------------------------------------------------
