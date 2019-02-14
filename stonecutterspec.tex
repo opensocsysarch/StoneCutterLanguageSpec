@@ -580,7 +580,8 @@ variable definitions in Listing~\ref{lis:samplevardefs}.
 \begin{lstlisting}[frame=single,style=base,caption={Variable Definitions},captionpos=b,label={lis:vardefs}]
 def INST( ... ){
   DATATYPE name1
-  DATATYPE name2, name3, ...
+  DATARYPE name2 = VALUE
+  DATATYPE name3, name4, ...
 
   <instruction body>
 }
@@ -901,6 +902,49 @@ def add( RT RA RB ){
 \subsection{Overview}
 \label{sec:IntrinsicOverview}
 
+In the same manner as other C-like languages and compiler infrastructures, 
+the StoneCutter language provides a notional set of builtin intrinsic functions.  
+Much like other languages, these intrinsic functions provide pathological 
+circuit functionality in a convenient and optimized package.  However, 
+unlike traditional strongly typed languages that provide unique intrinsic 
+functions for disparate data types, the StoneCutter language provides 
+single intrinsics that support all possible StoneCutter data types.  In this manner, 
+the StoneCutter compiler infrastructure interrogates the arguments of each intrinsic 
+at compile time and constructs an optimized Chisel representation of the target 
+operation using the user-specified types.  As a result, users may utilize the forthcoming 
+set of intrinsic operations with any target data types supported by the StoneCutter language.  
+
+StoneCutter intrinsics are classified as two disparate types: \textit{Arithmetic} intrinsics and 
+\textit{Memory} intrinsics.  Arithmetic intrinsics perform some notional permutation on the target 
+input data.  Arithmetic intrinsics generally require input and return the output as a unique data 
+member (\texttt{OUTPUT = INTRINSIC( INPUT )}).  Data members are not modified in place.  
+Memory intrinsics are different in that they interact with the memory infrastructure generated 
+by the CoreGen~\cite{IRSpec} code generation facilities such that the desired function unit may interact with 
+external memories such as caches and off-chip memory units.  Memory intrinsics are generally 
+provide functionality such as \textit{load} and \textit{store} operations.  
+
+StoneCutter intrinsic operations may be utilized anywhere within the body of an instruction definition.  
+The initial StoneCutter language parser \textit{lowers} any encountered intrinsic operations to the equivalent 
+of a function call.  The StoneCutter code generator expands these intrinsic function calls into their 
+full circuit descriptions using the target input and output types.  In this manner, including intrinsics within 
+the body of conditional flow control, loops and other basic blocks is both type safe and functionally sound.    
+
+Intrinsics can be utilized similar to C-style function calls.  Intrinsics names are placed in the instruction body 
+with the appropriate number of arguments.  Intrinsic arguments are separated by commas.  Intrinsics that return 
+values can be utilized within other expressions and/or assigned to values (\texttt{RT = INTRIN(..)}).  
+The syntax for utilizing intrinsics is depicted in Listing~\ref{lis:intrinsyntax}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Intrinsic Syntax},captionpos=b,label={lis:intrinsyntax}]
+def add( RT RA RB ){
+  u64 var1, var2
+  INTRIN( RB )
+  RB = INTRIN( RA )
+  RT = INTRIN( RA, RB )
+}
+\end{lstlisting}
+
+\clearpage
 \subsection{Arithmetic Intrinsics}
 \label{sec:ArithIntrinsics}
 
