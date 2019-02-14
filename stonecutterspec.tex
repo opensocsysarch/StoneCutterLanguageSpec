@@ -932,7 +932,8 @@ the body of conditional flow control, loops and other basic blocks is both type 
 Intrinsics can be utilized similar to C-style function calls.  Intrinsics names are placed in the instruction body 
 with the appropriate number of arguments.  Intrinsic arguments are separated by commas.  Intrinsics that return 
 values can be utilized within other expressions and/or assigned to values (\texttt{RT = INTRIN(..)}).  
-The syntax for utilizing intrinsics is depicted in Listing~\ref{lis:intrinsyntax}.  
+The syntax for utilizing intrinsics is depicted in Listing~\ref{lis:intrinsyntax}.  A summary of the intrinsics is provided 
+in Section~\ref{sec:AppendixB}.    
 
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Intrinsic Syntax},captionpos=b,label={lis:intrinsyntax}]
@@ -958,18 +959,18 @@ def add( RT RA RB ){
 \label{tab:CLZIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = CLZ(RA)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Counts the leading zeros (little endian)\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the value to count the leading zeros\\
+                          			     & \\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = CLZ(RA)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & The number of leading zeros in the input value\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -986,18 +987,19 @@ def add( RT RA RB ){
 \label{tab:COMPRESSIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = COMPRESS(RA)}\\
 \hline
-\textbf{Description} & foo\\
+\multirow{2}{*}{\textbf{Description}} & Bit compression.  For the number of '1' values in RA, set the least significant \\
+						      & bits to '1'.  Zero extend the result.\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the value to compress\\
+                          			     & \\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = COMPRESS(RA)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & The compressed version of RA\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1014,18 +1016,20 @@ def add( RT RA RB ){
 \label{tab:COMPRESSMIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = COMPRESSM(RA,RB)}\\
 \hline
-\textbf{Description} & foo\\
+\multirow{3}{*}{\textbf{Description}} & Bit compression under mask.  Perform a bitwise `\&` operation of the input and bitmask. \\
+						      & For the number of '1' values in the result, set the least significant \\
+						      & bits to '1'.  Zero extend the result.\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the value to compress\\
+                          			     & RB: Contains the bitmask to select compression bits \\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = COMPRESSM(RA, RB)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & The compressed version of RA via the bitmask RB\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1042,18 +1046,18 @@ def add( RT RA RB ){
 \label{tab:CTZIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = CTZ(RA)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Counts the trailing zeros (little endian)\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the value to count the trailing zeros\\
+                          			     & \\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = CTZ(RA)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & The number of trailing zeros in the input value\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1070,18 +1074,19 @@ def add( RT RA RB ){
 \label{tab:DOZIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = DOZ(RA,RB)}\\
 \hline
-\textbf{Description} & foo\\
+\multirow{2}{*}{\textbf{Description}} & Performs "first grade subtraction."  Returns $(RA-RB)$ IFF $RA >= RB$.\\
+			      			      & Returns 0 otherwise\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the left hand input value \\
+                          			     & RB: Contains the right hand input value \\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = DOZ(RA, RB)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & If( $RA >=$ RB ) \{ return $RA-RB$ \}else\{ return 0 \}\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1098,15 +1103,16 @@ def add( RT RA RB ){
 \label{tab:EXTRACTSIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{EXTRACTS(RA,RB,RC)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Extract the target field starting a bit position RC from RB, store into RA and sign extend.\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{3}{*}{\textbf{Arguments}} & RA: Contains the target output value\\
+                          			     & RB: Input value to extract from \\
+			                              & RC: Starting bit position\\
 \hline
-\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RC RT)\{\\
+                          			  &   EXTRACTS(RA, RB, RC)\\
                                                     & \}\\
 \hline
 \textbf{Return} & Nothing is returned\\                                                    
@@ -1126,15 +1132,16 @@ def add( RT RA RB ){
 \label{tab:EXTRACTZIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{EXTRACTZ(RA,RB,RC)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Extract the target field starting a bit position RC from RB, store into RA and zero extend.\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{3}{*}{\textbf{Arguments}} & RA: Contains the target input value\\
+                          			     & RB: Input value to extract from \\
+			                              & RC: Starting bit position\\
 \hline
-\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RC RT)\{\\
+                          			  &   EXTRACTZ(RA, RB, RC)\\
                                                     & \}\\
 \hline
 \textbf{Return} & Nothing is returned\\                                                    
@@ -1154,15 +1161,16 @@ def add( RT RA RB ){
 \label{tab:INSERTSIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{INSERTS(RA,RB, RC)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Insert the field (RB) into RA starting at bit position RC and sign extend\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{3}{*}{\textbf{Arguments}} & RA: Contains the target input value\\
+                          			     & RB: Input value to insert\\
+			                              & RC: Starting bit position\\
 \hline
-\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RC RT)\{\\
+                          			  &   INSERTS(RA, RB, RC)\\
                                                     & \}\\
 \hline
 \textbf{Return} & Nothing is returned\\                                                    
@@ -1182,15 +1190,16 @@ def add( RT RA RB ){
 \label{tab:INSERTZIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{INSERTZ(RA,RB,RC)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Insert the field (RB) into RA starting at bit position RC and zero extend\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{3}{*}{\textbf{Arguments}} & RA: Contains the target input value\\
+                          			     & RB: Input value to insert\\
+			                              & RC: Starting a bit position\\
 \hline
-\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RC RT)\{\\
+                          			  &   INSERTZ(RA, RB, RC)\\
                                                     & \}\\
 \hline
 \textbf{Return} & Nothing is returned\\                                                    
@@ -1210,18 +1219,20 @@ def add( RT RA RB ){
 \label{tab:MAJIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = MAJ(RA,RB,RC)}\\
 \hline
-\textbf{Description} & foo\\
+\multirow{2}{*}{\textbf{Description}} & Performs a majority vote of the values RA,RB and RC.\\
+             					      & Returns true if at least two inputs are true; returns false otherwise\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{3}{*}{\textbf{Arguments}} & RA: Input 1\\
+                          			     & RB: Input 2\\
+			     			     & RC: Input3\\
 \hline
-\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RC RT)\{\\
+                          			  &   RT = MAJ(RA, RB, RC)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & Returns true if at least two inputs are true; returns false otherwise\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1238,18 +1249,18 @@ def add( RT RA RB ){
 \label{tab:MAXIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = MAX(RA,RB)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Returns the maximum value of RA and RB\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{2}{*}{\textbf{Arguments}} & RA: Input 1\\
+                          			     & RB: Input 2\\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = MAX(RA, RB)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & If( RA $>$ RB )\{ return RA \}else\{ return RB\}\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1266,15 +1277,16 @@ def add( RT RA RB ){
 \label{tab:MERGEIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{MERGE(RA,RB,RC)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Selectively merge bits specified by the mask in RC from RB into RA\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{3}{*}{\textbf{Arguments}} & RA: Contains the target data to merge into\\
+                          			     & RB: Contains the value to selectively merge\\
+			     			     & RC: Contains bitwise mask input\\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   MERGE(RA, RB, RC)\\
                                                     & \}\\
 \hline
 \textbf{Return} & Nothing is returned\\                                                    
@@ -1294,18 +1306,18 @@ def add( RT RA RB ){
 \label{tab:MINIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = MIN(RA,RB)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Returns the minimum value of RA and RB\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{2}{*}{\textbf{Arguments}} & RA: Input1\\
+                          			     & RB: Input2\\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = MIN(RA, RB)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & If( RA $<$ RB )\{ return RA \}else\{ return RB\}\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1322,18 +1334,19 @@ def add( RT RA RB ){
 \label{tab:NOTIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = NOT(RA)}\\
 \hline
-\textbf{Description} & foo\\
+\multirow{3}{*}{\textbf{Description}} & Returns the bitwise complement of the input value.  If the input value is \\
+						      & a single bit boolean (\texttt{u1}), the logical complement is returned.  If \\
+						      & the input value is larger than a single bit, the bitwise complement is returned\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\textbf{Arguments} & RA: Contains the input to be complemented\\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = NOT(RA)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & Bitwise complement of RA\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1350,18 +1363,19 @@ def add( RT RA RB ){
 \label{tab:POPCOUNTIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = POPCOUNT(RA)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Returns the population count of the input variable.\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\textbf{Arguments} & RA: Contains the input value for the popcount\\
+                          			     
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = POPCOUNT(RA)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\multirow{2}{*}{\textbf{Return}} & The number of positive (1) bits in the input value is returned.  The output storage must \\
+			& contain sufficient space to storage the maximum popcount value (all positive bits)\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1378,18 +1392,17 @@ def add( RT RA RB ){
 \label{tab:REVERSEIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = REVERSE(RA)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Reverse the bit pattern of the input variable\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\textbf{Arguments} & RA: Contains the input to be reversed\\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = REVERSE(RA)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & The reversed bit pattern of the input variable\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1406,18 +1419,18 @@ def add( RT RA RB ){
 \label{tab:ROTLIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = ROTL(RA,RB)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Rotate the value in RA by RB bits to the left.\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the value to be rotated\\
+                          			     & RB: Contains the number of bits to rotate by \\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = ROTL(RA, RB)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & The input value is rotated left by RB bits\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1434,18 +1447,18 @@ def add( RT RA RB ){
 \label{tab:ROTRIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = ROTR(RA,RB)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Rotate the value in RA by RB bits to the right.\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the value to be rotated\\
+                          			     & RB: Contains the number of bits to rotate by \\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = ROTR(RA, RB)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & The input value is rotated right by RB bits\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1462,18 +1475,17 @@ def add( RT RA RB ){
 \label{tab:SEXTIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{STORE(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{Rt = SEXT(RA)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Sign extend the input value\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\textbf{Arguments} & RA: Contains the input value to sign extend\\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = SEXT(RA)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & The sign extended version of the input\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1492,16 +1504,15 @@ def add( RT RA RB ){
 \hline
 \textbf{Mnemonic} & \texttt{ZEXT(RA,RB)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Zero extend the input value\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
-                          			     & RB: Contains the target address \\
+\textbf{Arguments} & RA: Contains the input value to zero extend\\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   STORE(RA, RB)\\
+                          			  &   RT = ZEXT(RA)\\
                                                     & \}\\
 \hline
-\textbf{Return} & Nothing is returned\\                                                    
+\textbf{Return} & The zero extended version of the input\\                                                    
 \hline
 \end{tabular}
 \end{center}
@@ -1521,11 +1532,11 @@ def add( RT RA RB ){
 \label{tab:LOADIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{LOAD(RA)}\\
+\textbf{Mnemonic} & \texttt{RT = LOAD(RA)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Load the value at the address in RA.  Attempt to derive the datatype\\
 \hline
-\multirow{2}{*}{\textbf{Arguments}} & RA: Contains the target address \\
+\textbf{Arguments} & RA: Contains the target address \\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
                           			  &   RT = LOAD(RA)\\
@@ -1576,9 +1587,9 @@ def add( RT RA RB ){
 \label{tab:LOADELEMIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{LOADELEM(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{RT = LOADELEM(RA,RB)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Load the value at the address in RA.  The element size is contained in RB. \\
 \hline
 \multirow{2}{*}{\textbf{Arguments}} & RA: Contains the target address\\
                           			     & RB: Contains the size of the element \\
@@ -1606,7 +1617,7 @@ def add( RT RA RB ){
 \hline
 \textbf{Mnemonic} & \texttt{STOREELEM(RA,RB,RC)}\\
 \hline
-\textbf{Description} & foo\\
+\textbf{Description} & Stores the data in RA to the address at RB.  The element size is contained in RC.\\
 \hline
 \multirow{3}{*}{\textbf{Arguments}} & RA: Contains the data to be stored\\
                           			     & RB: Contains the target address \\
@@ -1648,53 +1659,53 @@ def add( RT RA RB ){
 \hline
 \textbf{Intrinsic} & \textbf{Inputs} & \textbf{Outputs} & \textbf{Description}\\
 \hline
-\hyperref[sec:CLZ]{\texttt{CLZ}} & 0 & 0 & Count leading zero\\
+\hyperref[sec:CLZ]{\texttt{CLZ}} & 1 & 1 & Count leading zero\\
 \hline
-\hyperref[sec:COMPRESS]{\texttt{COMPRESS}} & 0 & 0 & Bit compress\\
+\hyperref[sec:COMPRESS]{\texttt{COMPRESS}} & 1 & 1 & Bit compress\\
 \hline
-\hyperref[sec:COMPRESSM]{\texttt{COMPRESSM}} & 0 & 0 & Bit compress under mask\\
+\hyperref[sec:COMPRESSM]{\texttt{COMPRESSM}} & 1 & 2 & Bit compress under mask\\
 \hline
-\hyperref[sec:CTZ]{\texttt{CTZ}} & 0 & 0 & Count trailing zero\\
+\hyperref[sec:CTZ]{\texttt{CTZ}} & 1 & 1 & Count trailing zero\\
 \hline
-\hyperref[sec:DOZ]{\texttt{DOZ}} & 0 & 0 & First grade subtraction\\
+\hyperref[sec:DOZ]{\texttt{DOZ}} & 1 & 2 & First grade subtraction\\
 \hline
-\hyperref[sec:EXTRACTS]{\texttt{EXTRACTS}} & 0 & 0 & Bit extract and sign extend\\
+\hyperref[sec:EXTRACTS]{\texttt{EXTRACTS}} & 0 & 3 & Bit extract and sign extend\\
 \hline
-\hyperref[sec:EXTRACTZ]{\texttt{EXTRACTZ}} & 0 & 0 & Bit extract and zero extend\\
+\hyperref[sec:EXTRACTZ]{\texttt{EXTRACTZ}} & 0 & 3 & Bit extract and zero extend\\
 \hline
-\hyperref[sec:INSERTS]{\texttt{INSERTS}} & 0 & 0 & Bit insert and sign extend\\
+\hyperref[sec:INSERTS]{\texttt{INSERTS}} & 0 & 3 & Bit insert and sign extend\\
 \hline
-\hyperref[sec:INSERTZ]{\texttt{INSERTZ}} & 0 & 0 & Bit insert and zero extend\\
+\hyperref[sec:INSERTZ]{\texttt{INSERTZ}} & 0 & 3 & Bit insert and zero extend\\
 \hline
-\hyperref[sec:MAJ]{\texttt{MAJ}} & 0 & 0 & Majority vote\\
+\hyperref[sec:MAJ]{\texttt{MAJ}} & 1 & 3 & Majority vote\\
 \hline
-\hyperref[sec:MAX]{\texttt{MAX}} & 0 & 0 & Max\\
+\hyperref[sec:MAX]{\texttt{MAX}} & 1 & 2 & Max\\
 \hline
-\hyperref[sec:MERGE]{\texttt{MERGE}} & 0 & 0 & Merge under mask\\
+\hyperref[sec:MERGE]{\texttt{MERGE}} & 0 & 3 & Merge under mask\\
 \hline
-\hyperref[sec:MIN]{\texttt{MIN}} & 0 & 0 & Min\\
+\hyperref[sec:MIN]{\texttt{MIN}} & 1 & 2 & Min\\
 \hline
-\hyperref[sec:NOT]{\texttt{NOT}} & 0 & 0 & Bit complement\\
+\hyperref[sec:NOT]{\texttt{NOT}} & 1 & 1 & Bit complement\\
 \hline
-\hyperref[sec:POPCOUNT]{\texttt{POPCOUNT}} & 0 & 0 & Population count\\
+\hyperref[sec:POPCOUNT]{\texttt{POPCOUNT}} & 1 & 1 & Population count\\
 \hline
-\hyperref[sec:REVERSE]{\texttt{REVERSE}} & 0 & 0 & Bit reverse\\
+\hyperref[sec:REVERSE]{\texttt{REVERSE}} & 1 & 1 & Bit reverse\\
 \hline
-\hyperref[sec:ROTL]{\texttt{ROTL}} & 0 & 0 & Rotate left\\
+\hyperref[sec:ROTL]{\texttt{ROTL}} & 1 & 2 & Rotate left\\
 \hline
-\hyperref[sec:ROTR]{\texttt{ROTR}} & 0 & 0 & Rotate right\\
+\hyperref[sec:ROTR]{\texttt{ROTR}} & 1 & 2 & Rotate right\\
 \hline
-\hyperref[sec:SEXT]{\texttt{SEXT}} & 0 & 0 & Signe extend\\
+\hyperref[sec:SEXT]{\texttt{SEXT}} & 1 & 1 & Signe extend\\
 \hline
-\hyperref[sec:ZEXT]{\texttt{ZEXT}} & 0 & 0 & Zero extend\\
+\hyperref[sec:ZEXT]{\texttt{ZEXT}} & 1 & 2 & Zero extend\\
 \hline
-\hyperref[sec:LOAD]{\texttt{LOAD}} & 0 & 0 & Memory load\\
+\hyperref[sec:LOAD]{\texttt{LOAD}} & 1 & 1 & Memory load\\
 \hline
-\hyperref[sec:STORE]{\texttt{STORE}} & 0 & 0 & Memory store\\
+\hyperref[sec:STORE]{\texttt{STORE}} & 0 & 2 & Memory store\\
 \hline
-\hyperref[sec:LOADELEM]{\texttt{LOADELEM}} & 0 & 0 & Memory element load\\
+\hyperref[sec:LOADELEM]{\texttt{LOADELEM}} & 1 & 2 & Memory element load\\
 \hline
-\hyperref[sec:STOREELEM]{\texttt{STOREELEM}} & 0 & 0 & Memory element store\\
+\hyperref[sec:STOREELEM]{\texttt{STOREELEM}} & 0 & 3 & Memory element store\\
 \hline
 \end{tabular}
 \end{center}
