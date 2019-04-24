@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{StoneCutter Language Spec v.0.2}}  % -- classification
+\chead{\textbf{StoneCutter Language Spec v.0.3}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{StoneCutter Language Spec v.0.2}}  % -- classification
+\cfoot{\textbf{StoneCutter Language Spec v.0.3}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & February 21, 2019 \\ % Date the experiment was performed
-Revision: & 0.2 \\         % revision number
+Date: & April 24, 2019 \\ % Date the experiment was performed
+Revision: & 0.3 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -145,6 +145,7 @@ Authors: & Tactical Computing Labs\\ % Author names
 \begin{versionhistory}
   \vhEntry{0.1}{02.15.2019}{JLeidel}{Initial public release}
   \vhEntry{0.2}{02.21.2019}{JLeidel}{Adding syntax support for instruction to instruction format association}
+  \vhEntry{0.3}{04.24.2019}{JLeidel}{Adding register attribute field with PC register attribute}
 \end{versionhistory}
 \clearpage
 
@@ -255,6 +256,7 @@ instformat FORMAT1( FIELDTYPE FIELD1, FIELDTYPE FIELD2, ... )
 # Register Class Definitions
 regclass CLASS1( DATATYPE REG1, DATATYPE REG2, ... )
 regclass CLASS2( DATATYPE REG3( DATATYPE SUBREG1, DATATYPE SUBREG2 ) )
+regclass CLASS3( DATATYPE REG4[PC], ... )
 
 # Instruction Definitions
 def INST1( INPUT1 INPUT2 INPUT3 ) {
@@ -450,6 +452,7 @@ variable such that it can be explicitly utilized in any instruction definition b
 \begin{lstlisting}[frame=single,style=base,caption={Register Class Definition Syntax},captionpos=b,label={lis:regclass}]
 regclass RCName1( DATATYPE RegName1, DATATYPE RegName2, ... )
 regclass RCName2( DATATYPE RegName( DATATYPE SubReg1, DATATYPE SubReg2 ) )
+regclass RCName3( DATATYPE RegName[PC] )
 \end{lstlisting}
 
 We find the syntax for defining register classes and their associated registers in Listing~\ref{lis:regclass}.  Each register 
@@ -461,6 +464,12 @@ each register with subfields, the subfields are defined within parenthesis attac
 (Line 2 in Listing~\ref{lis:regclass}).  Each subfield must also contain its respective datatype.  The combined number of bits for 
 all subfields within a register definition must not exceed the total number of bits in that register.  
 
+Individual registers may also have the ability to define specific attributes.  Attributes are contained within brackets immediately 
+following the register name (\texttt{REGNAME[...]}).  Currently, the only supported attribute is the \texttt{PC} attribute.  This attribute 
+designates the target register as being enabled as the program counter for the target ISA.  The downstream result will be an automatic 
+incrementing of the PC value for each instruction execution.  Note that there should be only one PC register defined for each instruction 
+set.    
+
 We find an example register class definition for a simple RISC ISA in Listing~\ref{lis:sampleregclass}.  
 
 \vspace{0.125in}
@@ -471,7 +480,7 @@ regclass GPR( u64 r0, u64 r1, u64 r2, u64 r3, u64 r4, u64 r5, u64 r6,
 		       u64 r19, u64 r20, u64 r21, u64 r22, u64 r23, u64 r24, 
 		       u64 r25, u64 r26, u64 r27, u64 r28, u64 r29, u64 r30,
 		       r64 r31 )
-regclass CTRL( u64 pc, u64 exc, u64 ne, u64 gt, u64 lt, u64 gte,
+regclass CTRL( u64 pc[PC], u64 exc, u64 ne, u64 gt, u64 lt, u64 gte,
 			 u64 lte, u64 sp, u64 fp, u64 rp )
 \end{lstlisting}
 
