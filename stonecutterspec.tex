@@ -146,7 +146,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{0.1}{02.15.2019}{JLeidel}{Initial public release}
   \vhEntry{0.2}{02.21.2019}{JLeidel}{Adding syntax support for instruction to instruction format association}
   \vhEntry{0.3}{04.24.2019}{JLeidel}{Adding register attribute field with PC register attribute}
-  \vhEntry{0.4}{05.21.2019}{JLeidel}{Updating format for SEXT and ZEXT intrinsics, fixing MERGE intrinsic}
+  \vhEntry{0.4}{05.21.2019}{JLeidel}{Updating format for SEXT and ZEXT intrinsics; fixing MERGE intrinsic; added BSEL/FENCE intrinsics}
 \end{versionhistory}
 \clearpage
 
@@ -963,6 +963,36 @@ def add( RT RA RB ){
 \subsection{Arithmetic Intrinsics}
 \label{sec:ArithIntrinsics}
 
+\subsubsection{BSEL}
+\label{sec:BSEL}
+
+\begin{table}[h]
+\begin{center}
+\caption{BSEL Intrinsic}
+\vspace{0.125in}
+\label{tab:BSELIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{RT = BSEL(RA,RB,RC)}\\
+\hline
+\textbf{Description} & Bit field select of bits (RB$\rightarrow$RC) from value RA\\
+\hline
+\multirow{4}{*}{\textbf{Arguments}} & RA: Contains the value to select from\\
+                                    & RB: Contains the starting bit\\
+                                    & RC: Contains the ending bit\\
+                          			     & \\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RC RT)\{\\
+                          			  &   RT = BSEL(RA,RB,RC)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & The value of the selected field in the desired width\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{CLZ}
 \label{sec:CLZ}
 
@@ -1647,6 +1677,33 @@ def add( RT RA RB ){
 \end{center}
 \end{table}
 
+\clearpage
+\subsubsection{FENCE}
+\label{sec:FENCE}
+
+\begin{table}[h]
+\begin{center}
+\caption{FENCE Intrinsic}
+\vspace{0.125in}
+\label{tab:FENCEIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{FENCE()}\\
+\hline
+\textbf{Description} & Forces a memory fence operation.\\
+\hline
+\textbf{Arguments} & None\\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RC RT)\{\\
+                          			  &   FENCE()\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
 %----------------------------------------------------------------------------------------
 %	SECTION: Appendix A: Sample IR
 %----------------------------------------------------------------------------------------
@@ -1672,6 +1729,8 @@ def add( RT RA RB ){
 \begin{tabular}{|c|c|c|l|l}
 \hline
 \textbf{Intrinsic} & \textbf{Outputs} & \textbf{Inputs} & \textbf{Description}\\
+\hline
+\hyperref[sec:BSEL]{\texttt{BSEL}} & 1 & 3 & Bit field selection\\
 \hline
 \hyperref[sec:CLZ]{\texttt{CLZ}} & 1 & 1 & Count leading zero\\
 \hline
@@ -1720,6 +1779,8 @@ def add( RT RA RB ){
 \hyperref[sec:LOADELEM]{\texttt{LOADELEM}} & 1 & 2 & Memory element load\\
 \hline
 \hyperref[sec:STOREELEM]{\texttt{STOREELEM}} & 0 & 3 & Memory element store\\
+\hline
+\hyperref[sec:FENCE]{\texttt{FENCE}} & 0 & 0 & Memory fence\\
 \hline
 \end{tabular}
 \end{center}
