@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{StoneCutter Language Spec v.0.3}}  % -- classification
+\chead{\textbf{StoneCutter Language Spec v.0.4}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{StoneCutter Language Spec v.0.3}}  % -- classification
+\cfoot{\textbf{StoneCutter Language Spec v.0.4}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & April 24, 2019 \\ % Date the experiment was performed
-Revision: & 0.3 \\         % revision number
+Date: & May 21, 2019 \\ % Date the experiment was performed
+Revision: & 0.4 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -146,6 +146,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{0.1}{02.15.2019}{JLeidel}{Initial public release}
   \vhEntry{0.2}{02.21.2019}{JLeidel}{Adding syntax support for instruction to instruction format association}
   \vhEntry{0.3}{04.24.2019}{JLeidel}{Adding register attribute field with PC register attribute}
+  \vhEntry{0.4}{05.21.2019}{JLeidel}{Updating format for SEXT and ZEXT intrinsics}
 \end{versionhistory}
 \clearpage
 
@@ -1488,14 +1489,14 @@ def add( RT RA RB ){
 \label{tab:SEXTIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{Rt = SEXT(RA)}\\
+\textbf{Mnemonic} & \texttt{Rt = SEXT(RA,IMM)}\\
 \hline
-\textbf{Description} & Sign extend the input value\\
+\textbf{Description} & Sign extend the input value RA from the sign bit at IMM\\
 \hline
 \textbf{Arguments} & RA: Contains the input value to sign extend\\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   RT = SEXT(RA)\\
+                          			  &   RT = SEXT(RA,8)\\
                                                     & \}\\
 \hline
 \textbf{Return} & The sign extended version of the input\\                                                    
@@ -1515,14 +1516,14 @@ def add( RT RA RB ){
 \label{tab:ZEXTIntrinsic}
 \begin{tabular}{|c|l|}
 \hline
-\textbf{Mnemonic} & \texttt{ZEXT(RA,RB)}\\
+\textbf{Mnemonic} & \texttt{ZEXT(RA,IMM)}\\
 \hline
-\textbf{Description} & Zero extend the input value\\
+\textbf{Description} & Zero extend the input value RA where IMM is the most significant bit\\
 \hline
 \textbf{Arguments} & RA: Contains the input value to zero extend\\
 \hline
 \multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
-                          			  &   RT = ZEXT(RA)\\
+                          			  &   RT = ZEXT(RA,8)\\
                                                     & \}\\
 \hline
 \textbf{Return} & The zero extended version of the input\\                                                    
@@ -1708,9 +1709,9 @@ def add( RT RA RB ){
 \hline
 \hyperref[sec:ROTR]{\texttt{ROTR}} & 1 & 2 & Rotate right\\
 \hline
-\hyperref[sec:SEXT]{\texttt{SEXT}} & 1 & 1 & Signe extend\\
+\hyperref[sec:SEXT]{\texttt{SEXT}} & 2 & 1 & Sign extend\\
 \hline
-\hyperref[sec:ZEXT]{\texttt{ZEXT}} & 1 & 2 & Zero extend\\
+\hyperref[sec:ZEXT]{\texttt{ZEXT}} & 2 & 2 & Zero extend\\
 \hline
 \hyperref[sec:LOAD]{\texttt{LOAD}} & 1 & 1 & Memory load\\
 \hline
