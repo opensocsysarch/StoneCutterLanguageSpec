@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{StoneCutter Language Spec v.0.4}}  % -- classification
+\chead{\textbf{StoneCutter Language Spec v.0.5}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{StoneCutter Language Spec v.0.4}}  % -- classification
+\cfoot{\textbf{StoneCutter Language Spec v.0.5}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & May 21, 2019 \\ % Date the experiment was performed
-Revision: & 0.4 \\         % revision number
+Date: & October 15, 2019 \\ % Date the experiment was performed
+Revision: & 0.5 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -147,6 +147,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{0.2}{02.21.2019}{JLeidel}{Adding syntax support for instruction to instruction format association}
   \vhEntry{0.3}{04.24.2019}{JLeidel}{Adding register attribute field with PC register attribute}
   \vhEntry{0.4}{05.21.2019}{JLeidel}{Updating format for SEXT and ZEXT intrinsics; fixing MERGE intrinsic; added BSEL/FENCE intrinsics}
+  \vhEntry{0.5}{10.15.2019}{JLeidel}{Adding NOP instrinsic}
 \end{versionhistory}
 \clearpage
 
@@ -1368,6 +1369,35 @@ def add( RT RA RB ){
 \end{table}
 
 \clearpage
+\subsubsection{NOP}
+\label{sec:NOP}
+
+\begin{table}[h]
+\begin{center}
+\caption{NOP Intrinsic}
+\vspace{0.125in}
+\label{tab:NOPIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{NOP()}\\
+\hline
+
+\textbf{Description} & Initiates a NOP as a BR\_N micro operation\\
+
+\hline
+\textbf{Arguments} & None\\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def INST(RA RB RT)\{\\
+                          			  &   NOP()\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 \subsubsection{NOT}
 \label{sec:NOT}
 
@@ -1757,6 +1787,8 @@ def add( RT RA RB ){
 \hyperref[sec:MERGE]{\texttt{MERGE}} & 1 & 3 & Merge under mask\\
 \hline
 \hyperref[sec:MIN]{\texttt{MIN}} & 1 & 2 & Min\\
+\hline
+\hyperref[sec:NOP]{\texttt{NOP}} & 0 & 0 & Nop\\
 \hline
 \hyperref[sec:NOT]{\texttt{NOT}} & 1 & 1 & Bit complement\\
 \hline
