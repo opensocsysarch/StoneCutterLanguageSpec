@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{StoneCutter Language Spec v.0.5}}  % -- classification
+\chead{\textbf{StoneCutter Language Spec v.0.6}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{StoneCutter Language Spec v.0.5}}  % -- classification
+\cfoot{\textbf{StoneCutter Language Spec v.0.6}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & October 15, 2019 \\ % Date the experiment was performed
-Revision: & 0.5 \\         % revision number
+Date: & December 30, 2019 \\ % Date the experiment was performed
+Revision: & 0.6 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -148,6 +148,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{0.3}{04.24.2019}{JLeidel}{Adding register attribute field with PC register attribute}
   \vhEntry{0.4}{05.21.2019}{JLeidel}{Updating format for SEXT and ZEXT intrinsics; fixing MERGE intrinsic; added BSEL/FENCE intrinsics}
   \vhEntry{0.5}{10.15.2019}{JLeidel}{Adding NOP instrinsic}
+  \vhEntry{0.6}{12.30.2019}{JLeidel}{Adding pipeline syntax and instruction field widths}
 \end{versionhistory}
 \clearpage
 
@@ -387,7 +388,9 @@ Instruction formats and their associated fields are special variables in the Sto
 instruction field must reside within a respective instruction format.  Instruction fields are marked in the IR with 
 attributes in order to ensure that they are correctly associated with the correct instruction format.  Further, for each 
 field that is denoted as a register field, the associated register class must also be specified in order to correctly 
-link the register read datapath to the correct register file.  Each of the associated fields is annotated as a global 
+link the register read datapath to the correct register file.  Finally, each field may include a width specification 
+(in bits) that defines the field width for the target field.  This permits the StoneCutter compiler to perform bounds checking 
+for certain values.  If the field widths are not specified, they are written as '0' to the LLVM IR attribute lists.  Each of the associated fields is annotated as a global 
 variable such that is can be explicitly utilized in any instruction prototype or instruction body.  
 
 \begin{table}[h]
@@ -431,14 +434,15 @@ register fields may be written to.
 \begin{lstlisting}[frame=single,style=base,caption={Instruction Format Definition Syntax},captionpos=b,label={lis:instformat}]
 instformat FName1( FIELDTYPE FIELD1, FIELDTYPE FIELD2, ... )
 instformat FName2( reg[REGCLASS] FIELD1, ... )
+instformat FName3( reg[REGCLASS] FIELD1:WIDTH, ... )
 \end{lstlisting}
 
-We find an example instruction format definition for a simple RISC ISA with encodings for an opcode and function code 
-as well as three register fields in Listing~\ref{lis:sampleinstformat}.  
+We find an example instruction format definition for a simple RISC ISA with encodings for a 10-bit opcode and a 7-bit function code 
+as well as three register fields (5-bit fields each) in Listing~\ref{lis:sampleinstformat}.  
 
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Sample Instruction Format Definition},captionpos=b,label={lis:sampleinstformat}]
-instformat RISC( enc opc, enc func, reg[GPR] RT, reg[GPR] RA, reg[GPR] RB )
+instformat RISC( enc opc:10, enc func:7, reg[GPR] RT:5, reg[GPR] RA:5, reg[GPR] RB:5 )
 \end{lstlisting}
 
 \clearpage
@@ -899,13 +903,60 @@ def add( RT RA RB ){
   do{
     RT = RB << 1
     RA = RA + 1
-  }while( RA < RB )  
+  }while( RA < RB )
   do{
     var1 = var1 - 5
     RT = RT << 1
   }while( var1 >= RT )
 }
 \end{lstlisting}
+
+\clearpage
+\subsection{Pipeline Blocks}
+\label{sec:PipelineBlocks}
+
+The StoneCutter language supports the ability to place an operation or block of operations 
+within a specific, named pipeline stage.  Users may define single operations or blocks of 
+operations that contain all styles of StoneCutter syntactical elements (loops, flow control, arithmetic, etc).  
+Each pipeline stage requires a specific name identifier.  These name identifier can be re-utilized across 
+instruction defintiions such that operations are consolidated into the same pipeline stage.  For example, 
+if a user defines a pipeline stage "p0" in an instruction that contains an addition ("+") 
+operation and an additional pipeline stage "p0" in a second instruction that contains a 
+substraction ("-") operation, then the compiler will consolidate both the addition and subtraction 
+operations into pipeline stage "p0."
+
+Note that it is not required to define pipeline stages for any instructions.  The StoneCutter 
+compiler will attempt to construct in-order pipelines using the prescibed set of operations.  Further, 
+if the user elects to define pipelines for a subset of the instruction definitions, the 
+StoneCutter compiler will attempt to heuristically attempt to "fit" operations 
+into appropriate pipeline stages based upon what is prescribed in the pipeline blocks.
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Pipeline Syntax},captionpos=b,label={lis:pipelinesyntax}]
+pipe PIPENAME{
+  # operations
+}
+\end{lstlisting}
+
+We provide an example set of pipeline definitions using a fused multiply-add operation in Listing~\ref{lis:samplepipeline}.
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Sample Pipeline},captionpos=b,label={lis:samplepipeline}]
+def fma( RT RA RB ){
+  u64 var1
+
+  #-- pipeline stage p0 with addition
+  pipe p0{
+    var1 = RA + RB
+  }
+
+  #-- pipeline stage p1 with multiplication
+  pipe p1{
+    RT = var * RT
+  }
+}
+\end{lstlisting}
+
 
 %----------------------------------------------------------------------------------------
 %	SECTION 3
