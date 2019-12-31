@@ -148,7 +148,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{0.3}{04.24.2019}{JLeidel}{Adding register attribute field with PC register attribute}
   \vhEntry{0.4}{05.21.2019}{JLeidel}{Updating format for SEXT and ZEXT intrinsics; fixing MERGE intrinsic; added BSEL/FENCE intrinsics}
   \vhEntry{0.5}{10.15.2019}{JLeidel}{Adding NOP instrinsic}
-  \vhEntry{0.6}{12.30.2019}{JLeidel}{Adding pipeline syntax and instruction field widths}
+  \vhEntry{0.6}{12.30.2019}{JLeidel}{Adding pipeline syntax, instruction field widths and additional register attributes}
 \end{versionhistory}
 \clearpage
 
@@ -458,7 +458,8 @@ variable such that it can be explicitly utilized in any instruction definition b
 \begin{lstlisting}[frame=single,style=base,caption={Register Class Definition Syntax},captionpos=b,label={lis:regclass}]
 regclass RCName1( DATATYPE RegName1, DATATYPE RegName2, ... )
 regclass RCName2( DATATYPE RegName( DATATYPE SubReg1, DATATYPE SubReg2 ) )
-regclass RCName3( DATATYPE RegName[PC] )
+regclass RCName3( DATATYPE RegName[ATTRIBUTE1,ATTRIBUTE2] )
+regclass RCName3( DATATYPE RegName[ATTRIBUTE1,ATTRIBUTE2]( DATATYPE SubReg1 ) )
 \end{lstlisting}
 
 We find the syntax for defining register classes and their associated registers in Listing~\ref{lis:regclass}.  Each register 
@@ -471,23 +472,51 @@ each register with subfields, the subfields are defined within parenthesis attac
 all subfields within a register definition must not exceed the total number of bits in that register.  
 
 Individual registers may also have the ability to define specific attributes.  Attributes are contained within brackets immediately 
-following the register name (\texttt{REGNAME[...]}).  Currently, the only supported attribute is the \texttt{PC} attribute.  This attribute 
-designates the target register as being enabled as the program counter for the target ISA.  The downstream result will be an automatic 
-incrementing of the PC value for each instruction execution.  Note that there should be only one PC register defined for each instruction 
-set.    
+following the register name (\texttt{REGNAME[...]}).  StoneCutter currently supports the attributes listed in Table~\ref{tab:regattrs}.  Multiple attributes may be specified by separating each with a comma.  Note that there should be only one PC register defined for each instruction 
+set.
+
+\begin{table}[h]
+\begin{center}
+\caption{StoneCutter Register Attributes}
+\vspace{0.125in}
+\label{tab:regattrs}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Attribute Mnemonic} & \textbf{Description}\\
+\hline
+\texttt{PC} & Program Counter Register [One per instruction set]\\
+\hline
+\texttt{RO} & Read-Only Register\\
+\hline
+\texttt{RW} & Read-Write Register\\
+\hline
+\texttt{CSR} & Configuration-Status Register\\
+\hline
+\texttt{AMS} & Arithmetic Machine State Register\\
+\hline
+\texttt{TUS} & Thread Unit Shared Register\\
+\hline
+\texttt{Shared} & Global Shared Register\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
 
 We find an example register class definition for a simple RISC ISA in Listing~\ref{lis:sampleregclass}.  
 
+\clearpage
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Sample Register Class Definition},captionpos=b,label={lis:sampleregclass}]
-regclass GPR( u64 r0, u64 r1, u64 r2, u64 r3, u64 r4, u64 r5, u64 r6, 
+regclass GPR( u64 r0[RW], u64 r1[RW], u64 r2, u64 r3, u64 r4, u64 r5, u64 r6, 
 		       u64 r7, u64 r8, u64 r9, u64 r10, u64 r11, u64 r12, 
 		       u64 r13, u64 r14, u64 r15, u64 r16, u64 r17, u64 r18,
 		       u64 r19, u64 r20, u64 r21, u64 r22, u64 r23, u64 r24, 
 		       u64 r25, u64 r26, u64 r27, u64 r28, u64 r29, u64 r30,
 		       r64 r31 )
-regclass CTRL( u64 pc[PC], u64 exc, u64 ne, u64 gt, u64 lt, u64 gte,
-			 u64 lte, u64 sp, u64 fp, u64 rp )
+regclass CTRL( u64 pc[PC], u64 exc[RO,CSR], u64 ne[AMS], u64 gt[AMS],
+                         u64 lt[AMS], u64 gte[AMS], u64 lte[AMS],
+                         u64 sp, u64 fp, u64 rp )
 \end{lstlisting}
 
 \clearpage
