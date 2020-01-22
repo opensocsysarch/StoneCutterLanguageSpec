@@ -148,7 +148,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{0.3}{04.24.2019}{JLeidel}{Adding register attribute field with PC register attribute}
   \vhEntry{0.4}{05.21.2019}{JLeidel}{Updating format for SEXT and ZEXT intrinsics; fixing MERGE intrinsic; added BSEL/FENCE intrinsics}
   \vhEntry{0.5}{10.15.2019}{JLeidel}{Adding NOP instrinsic}
-  \vhEntry{0.6}{12.30.2019}{JLeidel}{Adding pipeline syntax, instruction field widths and additional register attributes}
+  \vhEntry{0.6}{12.30.2019}{JLeidel}{Adding pipeline syntax, instruction field widths and additional register attributes; Updating \texttt{for} loop syntax}
 \end{versionhistory}
 \clearpage
 
@@ -803,8 +803,8 @@ def add( RT RA RB ){
 The first style of loop statement supported by the StoneCutter language is the 
 \textit{for} loop.  The StoneCutter for loop is structured in a similar manner as the 
 traditional C for loop.  The loop is provided with a base case loop counter, a loop 
-termination statement and an optional iterator trip step.  The loop counter 
-can be an existing variable or a newly defined temporary variable.  Unlike other 
+termination statement and a loop iterator trip step.  The loop counter 
+can be an existing variable, a newly defined temporary variable or an immediate value.  Unlike other 
 temporary variables, loop trip counters can be defined inline within the for loop 
 structure.  The loop termination statement includes one or more comparison 
 statements that define the termination state of the loop using the loop trip 
@@ -815,10 +815,6 @@ syntax is depicted in Listing~\ref{lis:forloopsyntax}.
 
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={For Loop Syntax},captionpos=b,label={lis:forloopsyntax}]
-for( LOOPTRIP = BASE; LOOPTRIP <COMPARATOR> TERMINATOR ){
-  # for loop body
-}
-
 for( LOOPTRIP = BASE; LOOPTRIP <COMPARATOR> TERMINATOR; ITERATOR ){
   # for loop body
 }
@@ -858,10 +854,10 @@ We provide a set of example for loops in Listing~\ref{lis:sampleforloopsyntax}.
 \begin{lstlisting}[frame=single,style=base,caption={Sample For Loop Syntax},captionpos=b,label={lis:sampleforloopsyntax}]
 def add( RT RA RB ){
   u64 var1
-  for( i = 1; i < RA ){
+  for( i = 1; i < RA; 1 ){
     RB = RB + 1
   }
-  for( j = 0; i< RB; 5 )
+  for( j = 0; i< RB; j+5 )
     RT = RB | RT
   }
   for( var = 1024; i <= RT; RB ){
@@ -870,6 +866,7 @@ def add( RT RA RB ){
 }
 \end{lstlisting}
 
+\clearpage
 \subsubsection{While Loops}
 \label{sec:WhileLoops}
 
