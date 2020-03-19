@@ -951,6 +951,11 @@ operation and an additional pipeline stage "p0" in a second instruction that con
 substraction ("-") operation, then the compiler will consolidate both the addition and subtraction 
 operations into pipeline stage "p0."
 
+Users may also optionally specify a pipeline following the pipe stage name (\texttt{stage:name}).  
+The pipeline name allows users to tag individual pipeline stages for exexcution within specific 
+pipelines, thus promoting heterogeneous execution.  If no pipelines are specified across any 
+instructions, the compiler will assume a single pipeline for all instructions.
+
 Note that it is not required to define pipeline stages for any instructions.  The StoneCutter 
 compiler will attempt to construct in-order pipelines using the prescibed set of operations.  Further, 
 if the user elects to define pipelines for a subset of the instruction definitions, the 
@@ -962,12 +967,22 @@ into appropriate pipeline stages based upon what is prescribed in the pipeline b
 pipe PIPENAME{
   # operations
 }
+pipe PIPENAME:PIPELINE{
+  # operations
+}
 \end{lstlisting}
 
 We provide an example set of pipeline definitions using a fused multiply-add operation in Listing~\ref{lis:samplepipeline}.
 
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Sample Pipeline},captionpos=b,label={lis:samplepipeline}]
+def add ( RT RA RB ){
+  #-- pipeline stage p0 with addition for integer pipeline
+  pipe p0:integer_pipe{
+    RT = RA + RB
+  }
+}
+
 def fma( RT RA RB ){
   u64 var1
 
