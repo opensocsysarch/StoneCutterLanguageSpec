@@ -106,7 +106,7 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & December 30, 2019 \\ % Date the experiment was performed
+Date: & March 23, 2020 \\ % Date the experiment was performed
 Revision: & 0.6 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
@@ -148,7 +148,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{0.3}{04.24.2019}{JLeidel}{Adding register attribute field with PC register attribute}
   \vhEntry{0.4}{05.21.2019}{JLeidel}{Updating format for SEXT and ZEXT intrinsics; fixing MERGE intrinsic; added BSEL/FENCE intrinsics}
   \vhEntry{0.5}{10.15.2019}{JLeidel}{Adding NOP instrinsic}
-  \vhEntry{0.6}{12.30.2019}{JLeidel}{Adding pipeline syntax, instruction field widths and additional register attributes; Updating \texttt{for} loop syntax}
+  \vhEntry{0.6}{03.23.2020}{JLeidel}{Adding pipeline syntax, instruction field widths and additional register attributes; Updating \texttt{for} loop syntax}
 \end{versionhistory}
 \clearpage
 
@@ -517,6 +517,55 @@ regclass GPR( u64 r0[RW], u64 r1[RW], u64 r2, u64 r3, u64 r4, u64 r5, u64 r6,
 regclass CTRL( u64 pc[PC], u64 exc[RO,CSR], u64 ne[AMS], u64 gt[AMS],
                          u64 lt[AMS], u64 gte[AMS], u64 lte[AMS],
                          u64 sp, u64 fp, u64 rp )
+\end{lstlisting}
+
+\clearpage
+\subsection{Pipeline Definitions}
+\label{sec:PipeDef}
+
+Pipelines are defined as special variables in the StoneCutter language.  Each pipeline variable defines a single 
+pipeline structure and its associated attributes.  Each pipeline variable must be defined using a unique name that 
+is defined as global state in StoneCutter (names cannot be reused) with an optional attribute list.  Attributes are separated by commas.  These names 
+can be used within instruction definitions to attached individual pipeline stages to a named pipeline instance (Section~\ref{sec:PipelineBlocks}).  
+
+The syntax for pipeline definitions is shown in Listing~\ref{lis:pipedef}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Pipeline Definition Syntax},captionpos=b,label={lis:pipedef}]
+pipeline PIPENAME1()
+pipeline PIPENAME2(attr1, attr2, attr3, ...)
+\end{lstlisting}
+
+\begin{table}[h]
+\begin{center}
+\caption{Pipeline Attributes}
+\vspace{0.125in}
+\label{tab:pipeattrs}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Attribute Mnemonic} & \textbf{Description}\\
+\hline
+\texttt{in\_order} & Defines an \textit{in-order} pipeline\\
+\hline
+\texttt{out\_of\_order} & Defines an \textit{out-of-order} pipeline\\
+\hline
+\texttt{forward} & Enables pipeline stage forwarding\\
+\hline
+\texttt{branch\_predict} & Enables pipeline branch prediction\\
+\hline
+\texttt{stages\_N} & Defines an \textit{N} stage pipeline where \textit{N} is an integer\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+We find an example pipeline definition in Listing~\ref{lis:pipeex}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Pipeline DefinitionExample},captionpos=b,label={lis:pipeex}]
+pipeline pipeline1()
+pipeline pipeline2(in_order, stages_5)
+pipeline pipeline3(out_of_order, branch_predict, forward)
 \end{lstlisting}
 
 \clearpage
