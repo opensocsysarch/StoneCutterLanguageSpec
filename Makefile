@@ -2,7 +2,7 @@ PAPER = stonecutterspec
 TEX = $(wildcard *.tex)
 BIB = refs.bib
 FIGS = $(wildcard figures/*.pdf figures/*.png figures/*.jpg ./*.jpg)
-VER = 0.5
+VER = 0.6
 
 .PHONY: all clean
 

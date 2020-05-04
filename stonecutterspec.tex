@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{StoneCutter Language Spec v.0.5}}  % -- classification
+\chead{\textbf{StoneCutter Language Spec v.0.6}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{StoneCutter Language Spec v.0.5}}  % -- classification
+\cfoot{\textbf{StoneCutter Language Spec v.0.6}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & October 15, 2019 \\ % Date the experiment was performed
-Revision: & 0.5 \\         % revision number
+Date: & March 23, 2020 \\ % Date the experiment was performed
+Revision: & 0.6 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -148,6 +148,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{0.3}{04.24.2019}{JLeidel}{Adding register attribute field with PC register attribute}
   \vhEntry{0.4}{05.21.2019}{JLeidel}{Updating format for SEXT and ZEXT intrinsics; fixing MERGE intrinsic; added BSEL/FENCE intrinsics}
   \vhEntry{0.5}{10.15.2019}{JLeidel}{Adding NOP instrinsic}
+  \vhEntry{0.6}{03.23.2020}{JLeidel}{Adding pipeline syntax, instruction field widths and additional register attributes; Updating \texttt{for} loop syntax}
 \end{versionhistory}
 \clearpage
 
@@ -387,7 +388,9 @@ Instruction formats and their associated fields are special variables in the Sto
 instruction field must reside within a respective instruction format.  Instruction fields are marked in the IR with 
 attributes in order to ensure that they are correctly associated with the correct instruction format.  Further, for each 
 field that is denoted as a register field, the associated register class must also be specified in order to correctly 
-link the register read datapath to the correct register file.  Each of the associated fields is annotated as a global 
+link the register read datapath to the correct register file.  Finally, each field may include a width specification 
+(in bits) that defines the field width for the target field.  This permits the StoneCutter compiler to perform bounds checking 
+for certain values.  If the field widths are not specified, they are written as '0' to the LLVM IR attribute lists.  Each of the associated fields is annotated as a global 
 variable such that is can be explicitly utilized in any instruction prototype or instruction body.  
 
 \begin{table}[h]
@@ -431,14 +434,15 @@ register fields may be written to.
 \begin{lstlisting}[frame=single,style=base,caption={Instruction Format Definition Syntax},captionpos=b,label={lis:instformat}]
 instformat FName1( FIELDTYPE FIELD1, FIELDTYPE FIELD2, ... )
 instformat FName2( reg[REGCLASS] FIELD1, ... )
+instformat FName3( reg[REGCLASS] FIELD1:WIDTH, ... )
 \end{lstlisting}
 
-We find an example instruction format definition for a simple RISC ISA with encodings for an opcode and function code 
-as well as three register fields in Listing~\ref{lis:sampleinstformat}.  
+We find an example instruction format definition for a simple RISC ISA with encodings for a 10-bit opcode and a 7-bit function code 
+as well as three register fields (5-bit fields each) in Listing~\ref{lis:sampleinstformat}.  
 
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Sample Instruction Format Definition},captionpos=b,label={lis:sampleinstformat}]
-instformat RISC( enc opc, enc func, reg[GPR] RT, reg[GPR] RA, reg[GPR] RB )
+instformat RISC( enc opc:10, enc func:7, reg[GPR] RT:5, reg[GPR] RA:5, reg[GPR] RB:5 )
 \end{lstlisting}
 
 \clearpage
@@ -454,7 +458,8 @@ variable such that it can be explicitly utilized in any instruction definition b
 \begin{lstlisting}[frame=single,style=base,caption={Register Class Definition Syntax},captionpos=b,label={lis:regclass}]
 regclass RCName1( DATATYPE RegName1, DATATYPE RegName2, ... )
 regclass RCName2( DATATYPE RegName( DATATYPE SubReg1, DATATYPE SubReg2 ) )
-regclass RCName3( DATATYPE RegName[PC] )
+regclass RCName3( DATATYPE RegName[ATTRIBUTE1,ATTRIBUTE2] )
+regclass RCName3( DATATYPE RegName[ATTRIBUTE1,ATTRIBUTE2]( DATATYPE SubReg1 ) )
 \end{lstlisting}
 
 We find the syntax for defining register classes and their associated registers in Listing~\ref{lis:regclass}.  Each register 
@@ -467,23 +472,100 @@ each register with subfields, the subfields are defined within parenthesis attac
 all subfields within a register definition must not exceed the total number of bits in that register.  
 
 Individual registers may also have the ability to define specific attributes.  Attributes are contained within brackets immediately 
-following the register name (\texttt{REGNAME[...]}).  Currently, the only supported attribute is the \texttt{PC} attribute.  This attribute 
-designates the target register as being enabled as the program counter for the target ISA.  The downstream result will be an automatic 
-incrementing of the PC value for each instruction execution.  Note that there should be only one PC register defined for each instruction 
-set.    
+following the register name (\texttt{REGNAME[...]}).  StoneCutter currently supports the attributes listed in Table~\ref{tab:regattrs}.  Multiple attributes may be specified by separating each with a comma.  Note that there should be only one PC register defined for each instruction 
+set.
+
+\begin{table}[h]
+\begin{center}
+\caption{StoneCutter Register Attributes}
+\vspace{0.125in}
+\label{tab:regattrs}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Attribute Mnemonic} & \textbf{Description}\\
+\hline
+\texttt{PC} & Program Counter Register [One per instruction set]\\
+\hline
+\texttt{RO} & Read-Only Register\\
+\hline
+\texttt{RW} & Read-Write Register\\
+\hline
+\texttt{CSR} & Configuration-Status Register\\
+\hline
+\texttt{AMS} & Arithmetic Machine State Register\\
+\hline
+\texttt{TUS} & Thread Unit Shared Register\\
+\hline
+\texttt{Shared} & Global Shared Register\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
 
 We find an example register class definition for a simple RISC ISA in Listing~\ref{lis:sampleregclass}.  
 
+\clearpage
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Sample Register Class Definition},captionpos=b,label={lis:sampleregclass}]
-regclass GPR( u64 r0, u64 r1, u64 r2, u64 r3, u64 r4, u64 r5, u64 r6, 
+regclass GPR( u64 r0[RW], u64 r1[RW], u64 r2, u64 r3, u64 r4, u64 r5, u64 r6, 
 		       u64 r7, u64 r8, u64 r9, u64 r10, u64 r11, u64 r12, 
 		       u64 r13, u64 r14, u64 r15, u64 r16, u64 r17, u64 r18,
 		       u64 r19, u64 r20, u64 r21, u64 r22, u64 r23, u64 r24, 
 		       u64 r25, u64 r26, u64 r27, u64 r28, u64 r29, u64 r30,
 		       r64 r31 )
-regclass CTRL( u64 pc[PC], u64 exc, u64 ne, u64 gt, u64 lt, u64 gte,
-			 u64 lte, u64 sp, u64 fp, u64 rp )
+regclass CTRL( u64 pc[PC], u64 exc[RO,CSR], u64 ne[AMS], u64 gt[AMS],
+                         u64 lt[AMS], u64 gte[AMS], u64 lte[AMS],
+                         u64 sp, u64 fp, u64 rp )
+\end{lstlisting}
+
+\clearpage
+\subsection{Pipeline Definitions}
+\label{sec:PipeDef}
+
+Pipelines are defined as special variables in the StoneCutter language.  Each pipeline variable defines a single 
+pipeline structure and its associated attributes.  Each pipeline variable must be defined using a unique name that 
+is defined as global state in StoneCutter (names cannot be reused) with an optional attribute list.  Attributes are separated by commas.  These names 
+can be used within instruction definitions to attached individual pipeline stages to a named pipeline instance (Section~\ref{sec:PipelineBlocks}).  
+
+The syntax for pipeline definitions is shown in Listing~\ref{lis:pipedef}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Pipeline Definition Syntax},captionpos=b,label={lis:pipedef}]
+pipeline PIPENAME1()
+pipeline PIPENAME2(attr1, attr2, attr3, ...)
+\end{lstlisting}
+
+\begin{table}[h]
+\begin{center}
+\caption{Pipeline Attributes}
+\vspace{0.125in}
+\label{tab:pipeattrs}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Attribute Mnemonic} & \textbf{Description}\\
+\hline
+\texttt{in\_order} & Defines an \textit{in-order} pipeline\\
+\hline
+\texttt{out\_of\_order} & Defines an \textit{out-of-order} pipeline\\
+\hline
+\texttt{forward} & Enables pipeline stage forwarding\\
+\hline
+\texttt{branch\_predict} & Enables pipeline branch prediction\\
+\hline
+\texttt{stages\_N} & Defines an \textit{N} stage pipeline where \textit{N} is an integer\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+We find an example pipeline definition in Listing~\ref{lis:pipeex}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Pipeline DefinitionExample},captionpos=b,label={lis:pipeex}]
+pipeline pipeline1()
+pipeline pipeline2(in_order, stages_5)
+pipeline pipeline3(out_of_order, branch_predict, forward)
 \end{lstlisting}
 
 \clearpage
@@ -770,8 +852,8 @@ def add( RT RA RB ){
 The first style of loop statement supported by the StoneCutter language is the 
 \textit{for} loop.  The StoneCutter for loop is structured in a similar manner as the 
 traditional C for loop.  The loop is provided with a base case loop counter, a loop 
-termination statement and an optional iterator trip step.  The loop counter 
-can be an existing variable or a newly defined temporary variable.  Unlike other 
+termination statement and a loop iterator trip step.  The loop counter 
+can be an existing variable, a newly defined temporary variable or an immediate value.  Unlike other 
 temporary variables, loop trip counters can be defined inline within the for loop 
 structure.  The loop termination statement includes one or more comparison 
 statements that define the termination state of the loop using the loop trip 
@@ -782,10 +864,6 @@ syntax is depicted in Listing~\ref{lis:forloopsyntax}.
 
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={For Loop Syntax},captionpos=b,label={lis:forloopsyntax}]
-for( LOOPTRIP = BASE; LOOPTRIP <COMPARATOR> TERMINATOR ){
-  # for loop body
-}
-
 for( LOOPTRIP = BASE; LOOPTRIP <COMPARATOR> TERMINATOR; ITERATOR ){
   # for loop body
 }
@@ -825,10 +903,10 @@ We provide a set of example for loops in Listing~\ref{lis:sampleforloopsyntax}.
 \begin{lstlisting}[frame=single,style=base,caption={Sample For Loop Syntax},captionpos=b,label={lis:sampleforloopsyntax}]
 def add( RT RA RB ){
   u64 var1
-  for( i = 1; i < RA ){
+  for( i = 1; i < RA; 1 ){
     RB = RB + 1
   }
-  for( j = 0; i< RB; 5 )
+  for( j = 0; i< RB; j+5 )
     RT = RB | RT
   }
   for( var = 1024; i <= RT; RB ){
@@ -837,6 +915,7 @@ def add( RT RA RB ){
 }
 \end{lstlisting}
 
+\clearpage
 \subsubsection{While Loops}
 \label{sec:WhileLoops}
 
@@ -899,13 +978,75 @@ def add( RT RA RB ){
   do{
     RT = RB << 1
     RA = RA + 1
-  }while( RA < RB )  
+  }while( RA < RB )
   do{
     var1 = var1 - 5
     RT = RT << 1
   }while( var1 >= RT )
 }
 \end{lstlisting}
+
+\clearpage
+\subsection{Pipeline Blocks}
+\label{sec:PipelineBlocks}
+
+The StoneCutter language supports the ability to place an operation or block of operations 
+within a specific, named pipeline stage.  Users may define single operations or blocks of 
+operations that contain all styles of StoneCutter syntactical elements (loops, flow control, arithmetic, etc).  
+Each pipeline stage requires a specific name identifier.  These name identifier can be re-utilized across 
+instruction defintiions such that operations are consolidated into the same pipeline stage.  For example, 
+if a user defines a pipeline stage "p0" in an instruction that contains an addition ("+") 
+operation and an additional pipeline stage "p0" in a second instruction that contains a 
+substraction ("-") operation, then the compiler will consolidate both the addition and subtraction 
+operations into pipeline stage "p0."
+
+Users may also optionally specify a pipeline following the pipe stage name (\texttt{stage:name}).  
+The pipeline name allows users to tag individual pipeline stages for exexcution within specific 
+pipelines, thus promoting heterogeneous execution.  If no pipelines are specified across any 
+instructions, the compiler will assume a single pipeline for all instructions.
+
+Note that it is not required to define pipeline stages for any instructions.  The StoneCutter 
+compiler will attempt to construct in-order pipelines using the prescibed set of operations.  Further, 
+if the user elects to define pipelines for a subset of the instruction definitions, the 
+StoneCutter compiler will attempt to heuristically attempt to "fit" operations 
+into appropriate pipeline stages based upon what is prescribed in the pipeline blocks.
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Pipeline Syntax},captionpos=b,label={lis:pipelinesyntax}]
+pipe PIPENAME{
+  # operations
+}
+pipe PIPENAME:PIPELINE{
+  # operations
+}
+\end{lstlisting}
+
+We provide an example set of pipeline definitions using a fused multiply-add operation in Listing~\ref{lis:samplepipeline}.
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Sample Pipeline},captionpos=b,label={lis:samplepipeline}]
+def add ( RT RA RB ){
+  #-- pipeline stage p0 with addition for integer pipeline
+  pipe p0:integer_pipe{
+    RT = RA + RB
+  }
+}
+
+def fma( RT RA RB ){
+  u64 var1
+
+  #-- pipeline stage p0 with addition
+  pipe p0{
+    var1 = RA + RB
+  }
+
+  #-- pipeline stage p1 with multiplication
+  pipe p1{
+    RT = var * RT
+  }
+}
+\end{lstlisting}
+
 
 %----------------------------------------------------------------------------------------
 %	SECTION 3
