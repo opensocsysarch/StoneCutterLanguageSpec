@@ -902,15 +902,14 @@ We provide a set of example for loops in Listing~\ref{lis:sampleforloopsyntax}.
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Sample For Loop Syntax},captionpos=b,label={lis:sampleforloopsyntax}]
 def add( RT RA RB ){
-  u64 var1
   for( i = 1; i < RA; 1 ){
     RB = RB + 1
   }
-  for( j = 0; i< RB; j+5 )
+  for( j = 0; j< RB; j+5 )
     RT = RB | RT
   }
-  for( var = 1024; i <= RT; RB ){
-    RT = var
+  for( var = 1024; var <= RT; RB ){
+    RT = RT + var
   }
 }
 \end{lstlisting}
