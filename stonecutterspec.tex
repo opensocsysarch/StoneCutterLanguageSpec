@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{StoneCutter Language Spec v.0.6}}  % -- classification
+\chead{\textbf{StoneCutter Language Spec v.0.7}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{StoneCutter Language Spec v.0.6}}  % -- classification
+\cfoot{\textbf{StoneCutter Language Spec v.0.7}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & March 23, 2020 \\ % Date the experiment was performed
-Revision: & 0.6 \\         % revision number
+Date: & February 03, 2021 \\ % Date the experiment was performed
+Revision: & 0.7 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -149,6 +149,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{0.4}{05.21.2019}{JLeidel}{Updating format for SEXT and ZEXT intrinsics; fixing MERGE intrinsic; added BSEL/FENCE intrinsics}
   \vhEntry{0.5}{10.15.2019}{JLeidel}{Adding NOP instrinsic}
   \vhEntry{0.6}{03.23.2020}{JLeidel}{Adding pipeline syntax, instruction field widths and additional register attributes; Updating \texttt{for} loop syntax}
+  \vhEntry{0.7}{02.03.2021}{JLeidel}{Adding vector and matrix syntax to register class variables and variable declarations}
 \end{versionhistory}
 \clearpage
 
@@ -362,6 +363,10 @@ documented in Table~\ref{tab:datatypes}.
 \hline
 \texttt{sN} & N bits & Arbitrary signed integer of N bits\\
 \hline
+\texttt{<X>} & $X Elements \times Type Width$ & Vector of X elements\\
+\hline
+\texttt{<X,Y>} & $X \times Y \times Type Width$ & Matrix of X,Y elements\\
+\hline
 \end{tabular}
 \end{center}
 \end{table}
@@ -378,6 +383,16 @@ u1024 bar
 
 #-- signed 37 integer "foobar"
 s37 foobar
+\end{lstlisting}
+
+An example of defining vector and matrix storage is shown in Listing~\ref{lis:vectmat}.
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Vector and Matrix Datatypes},captionpos=b,label={lis:vectmat}]
+#-- vector of 8 unsigned 64 bit elements
+u64 vect0<8>
+
+#-- matrix of 8x12 cells using 32 bit unsigned elements
+u32 mat0<8,12>
 \end{lstlisting}
 
 \clearpage
@@ -459,7 +474,8 @@ variable such that it can be explicitly utilized in any instruction definition b
 regclass RCName1( DATATYPE RegName1, DATATYPE RegName2, ... )
 regclass RCName2( DATATYPE RegName( DATATYPE SubReg1, DATATYPE SubReg2 ) )
 regclass RCName3( DATATYPE RegName[ATTRIBUTE1,ATTRIBUTE2] )
-regclass RCName3( DATATYPE RegName[ATTRIBUTE1,ATTRIBUTE2]( DATATYPE SubReg1 ) )
+regclass RCName4( DATATYPE RegName[ATTRIBUTE1,ATTRIBUTE2]( DATATYPE SubReg1 ) )
+regclass RCName1( DATATYPE RegName1<DIMX>, DATATYPE RegName2<DIMX,DIMY>, ... )
 \end{lstlisting}
 
 We find the syntax for defining register classes and their associated registers in Listing~\ref{lis:regclass}.  Each register 
@@ -474,6 +490,15 @@ all subfields within a register definition must not exceed the total number of b
 Individual registers may also have the ability to define specific attributes.  Attributes are contained within brackets immediately 
 following the register name (\texttt{REGNAME[...]}).  StoneCutter currently supports the attributes listed in Table~\ref{tab:regattrs}.  Multiple attributes may be specified by separating each with a comma.  Note that there should be only one PC register defined for each instruction 
 set.
+
+As of version 0.7 of the StoneCutter language specification, individual registers may also be designated as vector or matrix registers.  Vector 
+registers are defined using chevrons that contain the number of vector elements (\texttt{DATATYPE VAR<elems>}).  Matrices are defined 
+in a similar manner using the \texttt{X} and \texttt{Y} dimensions of the matrix (in that order) within the chevrons (\texttt{DATATYPE VAR<DimX,DimY>}).  Take 
+great care in defining large vector or matrix registers as the total size (in bits) for vectors is $(Size = SizeOfElem \times DimX)$ and matrices is $(Size = SizeOfElem \times DimX \times DimY)$.  For each of the vector and matrix register definitions, the compiler will automatically expand the individual register element names such that 
+they can be accessed individually.  For example, if we define a vector register as \texttt{u64 r0<8>}, the compiler will automatically emit \texttt{r0\_0}, \texttt{r0\_1} ... 
+\texttt{r0\_7}.  Similarly, matrices are expanded into the form: \texttt{regname\_X\_Y}.  Additionally, matrices also expand special 
+row and column vectors to represent each row and column in the matrix.  These are represented as \texttt{regname\_rowX} and \texttt{regname\_colY}.  Finally, for square 
+matrices, the diagonal vector is emitted as \texttt{regname\_diag}.  
 
 \begin{table}[h]
 \begin{center}
@@ -503,9 +528,10 @@ set.
 \end{table}
 
 
+\clearpage
 We find an example register class definition for a simple RISC ISA in Listing~\ref{lis:sampleregclass}.  
 
-\clearpage
+%\clearpage
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Sample Register Class Definition},captionpos=b,label={lis:sampleregclass}]
 regclass GPR( u64 r0[RW], u64 r1[RW], u64 r2, u64 r3, u64 r4, u64 r5, u64 r6, 
@@ -517,6 +543,7 @@ regclass GPR( u64 r0[RW], u64 r1[RW], u64 r2, u64 r3, u64 r4, u64 r5, u64 r6,
 regclass CTRL( u64 pc[PC], u64 exc[RO,CSR], u64 ne[AMS], u64 gt[AMS],
                          u64 lt[AMS], u64 gte[AMS], u64 lte[AMS],
                          u64 sp, u64 fp, u64 rp )
+regclass ML( u64 v0<8>, u64 v1<8>, u64 v2<8>, u64 m0<16,16> )
 \end{lstlisting}
 
 \clearpage
