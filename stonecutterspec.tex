@@ -1099,6 +1099,75 @@ def fma( RT RA RB ){
 \end{lstlisting}
 
 
+\subsection{VLIW Pipeline Blocks}
+\label{sec:VLIWPipelineBlocks}
+In addition to providing support for RISC pipelines, StoneCutter also gives users 
+the tools necessary to construct their own VLIW pipelines. 
+A VLIW stage is defined with the \texttt{def} keyword used for instruction prototypes however 
+the stage's mnemonic must be suffixed with an underscore \texttt{\_} followed by a number 
+used for deriving its position inside the pipeline. 
+There are no requirements for the number, $n$ so long as there exists at least one other VLIW stage 
+whose mnemonic number is equal to $n\pm1$.
+Users can define seperate stages which share the same positional identifier as seen in \ref{lis}
+It is worth noting that while one can define their stages in any order, the VLIW pipeliner will 
+sort them in increasing order.  
+
+\begin{lstlisting}[frame=single,style=base,caption={VLIW Stage Mnemonic Syntax},captionpos=b,label={lis:vliw-stagenum-syntax}]
+
+#-- STAGE_0 is implied: fetch+crack
+STAGE_1:VLIW( ... ) {
+  ...
+}
+
+STAGEA_2:VLIW( ... ) {
+  ...
+} 
+
+STAGEB_2:VLIW( ... ) {
+  ...
+} 
+
+STAGE_3:VLIW( ... ) {
+  ...
+}
+\end{lstlisting}
+
+Another key aspect of designing a VLIW architecture is defining how data flows between stages 
+throughout the pipeline stages. 
+Users can leverage the \texttt{IN} and \texttt{OUT} instrinsics to dictate how data will be 
+passed to and from the VLIW prototype stages. 
+A user can pass a \texttt{instformat field}, \texttt{regclass}, or \texttt{variable} as an output (\texttt{OUT})
+signal to be received as an input (\texttt{IN}) from another stage. 
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={VLIW IN/OUT Syntax},captionpos=b,label={lis:vliw-in-out-syntax}]
+...
+regclass CLASS1( DATATYPE REG1, DATATYPE REG2, ... )
+...
+
+#-- STAGE_0 is implied: fetch+crack
+STAGE_1:VLIW() {
+  ...
+  u64 TmpREG1 = LOADELEM( REG1, 64 )
+  OUT(TmpREG1)
+}
+
+STAGE_2:VLIW( TmpREG1 ) {
+  IN(TmpREG1)
+} 
+
+\end{lstlisting}
+
+The example shown in \ref{lis:vliw-in-out-syntax} illutrates how one would link an output from \texttt{STAGE\_0}
+to \texttt{STAGE\_1}. 
+A temporary variable is created inside of \texttt{STAGE\_1} and passed to an \texttt{OUT} intrinsic. 
+The user must then define at least one another VLIW pipeline stage prototype that takes in this temporary
+inside its argument list \underline{\textbf{and}} define an \texttt{IN} at the beginning of the stage prototype
+to ensure the compiler detects it as a link between stages. 
+It is important to note that a single argument to an \texttt{OUT} intrinsic can be treated as an input to 
+any other VLIW stage whose position in the pipeline follows. 
+
+
 %----------------------------------------------------------------------------------------
 %	SECTION 3
 %----------------------------------------------------------------------------------------
