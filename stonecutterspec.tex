@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{StoneCutter Language Spec v.0.7}}  % -- classification
+\chead{\textbf{StoneCutter Language Spec v.0.8}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{StoneCutter Language Spec v.0.7}}  % -- classification
+\cfoot{\textbf{StoneCutter Language Spec v.0.8}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & February 03, 2021 \\ % Date the experiment was performed
-Revision: & 0.7 \\         % revision number
+Date: & January 18, 2022 \\ % Date the experiment was performed
+Revision: & 0.8 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -150,6 +150,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{0.5}{10.15.2019}{JLeidel}{Adding NOP instrinsic}
   \vhEntry{0.6}{03.23.2020}{JLeidel}{Adding pipeline syntax, instruction field widths and additional register attributes; Updating \texttt{for} loop syntax}
   \vhEntry{0.7}{02.03.2021}{JLeidel}{Adding vector and matrix syntax to register class variables and variable declarations}
+  \vhEntry{0.8}{01.18.2022}{RKabrick}{...}
 \end{versionhistory}
 \clearpage
 
@@ -678,6 +679,29 @@ def sub:RISC( RT RA RB ){
 \end{lstlisting}
 
 \clearpage
+
+\subsection{VLIW Prototypes}
+\label{sec:VLIWPrototypes}
+VLIW prototypes are supported as well and give users explicity control of how individual stages communicate with one another. 
+Defining a VLIW stage prototype is syntactically similar to Instruction Prototypes\ref{sec:InstructionPrototypes} with a few distinct differences.
+
+First, the stage mnemonic (synonymous with \texttt{INSTNAME} in Listing\ref{lis:instprototype}), must be suffixed with a monotonically increasingly number
+distinguishing its order within the pipeline. 
+Additionally, the stage name \underline{\textbf{must}} be followed by \texttt{:VLIW} syntax to indicate to the compiler the following prototype 
+should be evaluated as a VLIW stage prototype and not an instruction prototype. 
+If a VLIW prototype does not specify \texttt{:VLIW} it will be evaluated as an instruction and result in errors at compile time. 
+Moreover, if \texttt{:VLIW} is specified and the \texttt{STAGENAME} is not properly suffixed with \texttt{\_} and a number indicating its position 
+in the VLIW pipeline the compiler will alert the user VLIW prototypes require a monotonically increasing number at the end of the stage mnemonic. 
+Finally, the user can pass arguments to the stage prototype so long as they are either an \texttt{instformat} field, \texttt{regclass}, or a 
+variable so long as is passed as an output signal from another VLIW stage prototype which properly specifies it as an output (see \ref{sec:VLIWPipelineBlocks}).
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={VLIW Stage Prototype Format},captionpos=b,label={lis:vliwprototype}]
+def STAGENAME_#:VLIW( ARG1 ARG2 ARG3 ... ) {
+}
+\end{lstlisting}
+
+
 \subsection{Variable Definitions}
 \label{sec:Variable Definitions}
 
@@ -711,6 +735,7 @@ def INST( ... ){
 }
 \end{lstlisting}
 
+\clearpage
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Sample Variable Definitions},captionpos=b,label={lis:samplevardefs}]
 instformat RISC( enc opc, enc func, reg[GPR] RT, reg[GPR] RA, reg[GPR] RB )
@@ -1072,6 +1097,76 @@ def fma( RT RA RB ){
   }
 }
 \end{lstlisting}
+
+
+\subsection{VLIW Pipeline Blocks}
+\label{sec:VLIWPipelineBlocks}
+In addition to providing support for RISC pipelines, StoneCutter also gives users 
+the tools necessary to construct their own VLIW pipelines. 
+A VLIW stage is defined with the \texttt{def} keyword used for instruction prototypes however 
+the stage's mnemonic must be suffixed with an underscore \texttt{\_} followed by a number 
+used for deriving its position inside the pipeline. 
+There are no requirements for the number, $n$ so long as there exists at least one other VLIW stage 
+whose mnemonic number is equal to $n\pm1$.
+Users can define seperate stages which share the same positional identifier
+as seen in Listing~\ref{lis:vliw-stagenum-syntax}
+It is worth noting that while one can define their stages in any order, the VLIW pipeliner will 
+sort them in increasing order.  
+
+\begin{lstlisting}[frame=single,style=base,caption={VLIW Stage Mnemonic Syntax},captionpos=b,label={lis:vliw-stagenum-syntax}]
+
+#-- STAGE_0 is implied: fetch+crack
+STAGE_1:VLIW( ... ) {
+  ...
+}
+
+STAGEA_2:VLIW( ... ) {
+  ...
+} 
+
+STAGEB_2:VLIW( ... ) {
+  ...
+} 
+
+STAGE_3:VLIW( ... ) {
+  ...
+}
+\end{lstlisting}
+
+Another key aspect of designing a VLIW architecture is defining how data flows between stages 
+throughout the pipeline stages. 
+Users can leverage the \texttt{IN} and \texttt{OUT} instrinsics to dictate how data will be 
+passed to and from the VLIW prototype stages. 
+A user can pass a \texttt{instformat field}, \texttt{regclass}, or \texttt{variable} as an output (\texttt{OUT})
+signal to be received as an input (\texttt{IN}) from another stage. 
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={VLIW IN/OUT Syntax},captionpos=b,label={lis:vliw-in-out-syntax}]
+...
+regclass CLASS1( DATATYPE REG1, DATATYPE REG2, ... )
+...
+
+#-- STAGE_0 is implied: fetch+crack
+STAGE_1:VLIW() {
+  ...
+  u64 TmpREG1 = LOADELEM( REG1, 64 )
+  OUT(TmpREG1)
+}
+
+STAGE_2:VLIW( TmpREG1 ) {
+  IN(TmpREG1)
+} 
+
+\end{lstlisting}
+
+The example shown in Listing~\ref{lis:vliw-in-out-syntax} illutrates how one would link an output from \texttt{STAGE\_0}
+to \texttt{STAGE\_1}. 
+A temporary variable is created inside of \texttt{STAGE\_1} and passed to an \texttt{OUT} intrinsic. 
+The user must then define at least one another VLIW pipeline stage prototype that takes in this temporary
+inside its argument list \underline{\textbf{and}} define an \texttt{IN} at the beginning of the stage prototype
+to ensure the compiler detects it as a link between stages. 
+It is important to note that a single argument to an \texttt{OUT} intrinsic can be treated as an input to 
+any other VLIW stage whose position in the pipeline follows. 
 
 
 %----------------------------------------------------------------------------------------
@@ -1900,6 +1995,58 @@ def add( RT RA RB ){
 \end{tabular}
 \end{center}
 \end{table}
+
+\clearpage
+\subsubsection{IN}
+\label{sec:IN}
+
+\begin{table}[h]
+\begin{center}
+\caption{IN Intrinsic}
+\vspace{0.125in}
+\label{tab:INIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{IN(ARG)}\\
+\hline
+\textbf{Description} & Defines input to a VLIW pipeline stage.\\
+\hline
+  \textbf{Arguments} & ARG defines the \texttt{instformat} field, \texttt{register}, or \texttt{variable} input for the encompassing stage.\\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def STAGE\_1:VLIW( ARG1 )\{\\
+                                  &   IN(ARG1)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[h]
+\begin{center}
+\caption{OUT Intrinsic}
+\vspace{0.125in}
+\label{tab:OUTIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{OUT(ARG)}\\
+\hline
+\textbf{Description} & Defines output from a VLIW pipeline stage.\\
+\hline
+  \textbf{Arguments} & ARG defines the \texttt{instformat} field, \texttt{register}, or \texttt{variable} to be a VLIW output from the encompassing stage.\\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def STAGE\_1:VLIW( ... )\{\\
+                                  &   u64 TmpARG1 = LOADELEM(ARG1, 64)\\
+                                  &   OUT(TmpARG1)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
 
 %----------------------------------------------------------------------------------------
 %	SECTION: Appendix A: Sample IR
