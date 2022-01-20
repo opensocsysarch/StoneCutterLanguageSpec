@@ -1925,6 +1925,58 @@ def add( RT RA RB ){
 \end{center}
 \end{table}
 
+\clearpage
+\subsubsection{IN}
+\label{sec:IN}
+
+\begin{table}[h]
+\begin{center}
+\caption{IN Intrinsic}
+\vspace{0.125in}
+\label{tab:INIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{IN(ARG)}\\
+\hline
+\textbf{Description} & Defines input to a VLIW pipeline stage.\\
+\hline
+  \textbf{Arguments} & ARG defines the \texttt{instformat} field, \texttt{register}, or \texttt{variable} input for the encompassing stage.\\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def STAGE\_1:VLIW( ARG1 )\{\\
+                                  &   IN(ARG1)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[h]
+\begin{center}
+\caption{OUT Intrinsic}
+\vspace{0.125in}
+\label{tab:OUTIntrinsic}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Mnemonic} & \texttt{OUT(ARG)}\\
+\hline
+\textbf{Description} & Defines output from a VLIW pipeline stage.\\
+\hline
+  \textbf{Arguments} & ARG defines the \texttt{instformat} field, \texttt{register}, or \texttt{variable} to be a VLIW output from the encompassing stage.\\
+\hline
+\multirow{3}{*}{\textbf{Example}} & def STAGE\_1:VLIW( ... )\{\\
+                                  &   u64 TmpARG1 = LOADELEM(ARG1, 64)\\
+                                  &   OUT(TmpARG1)\\
+                                                    & \}\\
+\hline
+\textbf{Return} & Nothing is returned\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
 %----------------------------------------------------------------------------------------
 %	SECTION: Appendix A: Sample IR
 %----------------------------------------------------------------------------------------
