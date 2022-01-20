@@ -685,19 +685,18 @@ def sub:RISC( RT RA RB ){
 VLIW prototypes are supported as well and give users explicity control of how individual stages communicate with one another. 
 Defining a VLIW stage prototype is syntactically similar to Instruction Prototypes\ref{sec:InstructionPrototypes} with a few distinct differences.
 
-First, the stage mnemonic (synonymous with \texttt{INSTNAME} in \ref{lis:instprototype}), must be suffixed with a monotonically increasingly number
+First, the stage mnemonic (synonymous with \texttt{INSTNAME} in Listing\ref{lis:instprototype}), must be suffixed with a monotonically increasingly number
 distinguishing its order within the pipeline. 
 Additionally, the stage name \underline{\textbf{must}} be followed by \texttt{:VLIW} syntax to indicate to the compiler the following prototype 
 should be evaluated as a VLIW stage prototype and not an instruction prototype. 
 If a VLIW prototype does not specify \texttt{:VLIW} it will be evaluated as an instruction and result in errors at compile time. 
 Moreover, if \texttt{:VLIW} is specified and the \texttt{STAGENAME} is not properly suffixed with \texttt{\_} and a number indicating its position 
 in the VLIW pipeline the compiler will alert the user VLIW prototypes require a monotonically increasing number at the end of the stage mnemonic. 
-Finally, the user can pass arguments (\texttt{ARG\#}) to the stage prototype so long as they are either an \texttt{instformat} field, \texttt{regclass}, or a 
-temporary variable so long as is passed as an output signal from another VLIW stage prototype which properly specifies it as an output (see \. 
+Finally, the user can pass arguments to the stage prototype so long as they are either an \texttt{instformat} field, \texttt{regclass}, or a 
+variable so long as is passed as an output signal from another VLIW stage prototype which properly specifies it as an output (see \ref{sec:VLIWPipelineBlocks}).
 
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={VLIW Stage Prototype Format},captionpos=b,label={lis:vliwprototype}]
-def STAGENAME\_\#[:VLIW]( ARG1 ARG2 ARG3 ... ) {
 def STAGENAME_#:VLIW( ARG1 ARG2 ARG3 ... ) {
 }
 \end{lstlisting}
