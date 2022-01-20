@@ -735,6 +735,7 @@ def INST( ... ){
 }
 \end{lstlisting}
 
+\clearpage
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Sample Variable Definitions},captionpos=b,label={lis:samplevardefs}]
 instformat RISC( enc opc, enc func, reg[GPR] RT, reg[GPR] RA, reg[GPR] RB )
@@ -1107,7 +1108,8 @@ the stage's mnemonic must be suffixed with an underscore \texttt{\_} followed by
 used for deriving its position inside the pipeline. 
 There are no requirements for the number, $n$ so long as there exists at least one other VLIW stage 
 whose mnemonic number is equal to $n\pm1$.
-Users can define seperate stages which share the same positional identifier as seen in \ref{lis}
+Users can define seperate stages which share the same positional identifier
+as seen in Listing~\ref{lis:vliw-stagenum-syntax}
 It is worth noting that while one can define their stages in any order, the VLIW pipeliner will 
 sort them in increasing order.  
 
@@ -1157,7 +1159,7 @@ STAGE_2:VLIW( TmpREG1 ) {
 
 \end{lstlisting}
 
-The example shown in \ref{lis:vliw-in-out-syntax} illutrates how one would link an output from \texttt{STAGE\_0}
+The example shown in Listing~\ref{lis:vliw-in-out-syntax} illutrates how one would link an output from \texttt{STAGE\_0}
 to \texttt{STAGE\_1}. 
 A temporary variable is created inside of \texttt{STAGE\_1} and passed to an \texttt{OUT} intrinsic. 
 The user must then define at least one another VLIW pipeline stage prototype that takes in this temporary
